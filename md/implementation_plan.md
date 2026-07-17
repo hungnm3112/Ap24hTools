@@ -326,55 +326,62 @@ backend/
 ```
 frontend/
 ├── src/
-│   ├── app/
-│   │   ├── (auth)/                    # Route group cho Auth (không cần đăng nhập)
+│   ├── app/                           # Sử dụng Next.js App Router (Routing dựa trên thư mục)
+│   │   ├── (auth)/                    # Route group cho Auth (bỏ qua 'auth' trên URL, không cần đăng nhập)
 │   │   │   ├── login/
-│   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx           # Trang Đăng nhập (UI form đăng nhập)
 │   │   │   ├── register/
-│   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx           # Trang Đăng ký tài khoản
 │   │   │   ├── verify/
-│   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx           # Trang nhập mã OTP xác thực
 │   │   │   └── forgot-password/
-│   │   │       └── page.tsx
-│   │   ├── (admin)/                   # Route group cho Dashboard (cần đăng nhập)
-│   │   │   ├── layout.tsx             # Layout chung: Sidebar + Header
+│   │   │       └── page.tsx           # Trang quên mật khẩu
+│   │   ├── (admin)/                   # Route group cho Admin (bỏ qua 'admin' trên URL, yêu cầu JWT)
+│   │   │   ├── layout.tsx             # Layout chung cho Admin: bọc Sidebar (Menu) + Header (Avatar, Logout)
 │   │   │   ├── dashboard/
-│   │   │   │   └── page.tsx           # Trang tổng quan
+│   │   │   │   └── page.tsx           # Trang chủ tổng quan (thống kê số liệu)
 │   │   │   ├── price-comparison/
-│   │   │   │   └── page.tsx           # Bảng so sánh & duyệt giá
+│   │   │   │   └── page.tsx           # Bảng so sánh & duyệt giá cập nhật
 │   │   │   ├── competitors/
-│   │   │   │   ├── page.tsx           # Danh sách đối thủ
+│   │   │   │   ├── page.tsx           # Trang danh sách đối thủ cạnh tranh
 │   │   │   │   └── [id]/
 │   │   │   │       └── setup/
-│   │   │   │           └── page.tsx   # ⭐ Trang Point & Click chọn Selector
+│   │   │   │           └── page.tsx   # ⭐ Trang Point & Click: Render web đối thủ qua Iframe để chọn selector
 │   │   │   ├── categories/
-│   │   │   │   └── page.tsx           # Quản lý danh mục
+│   │   │   │   └── page.tsx           # Trang quản lý danh mục sản phẩm (CRUD)
 │   │   │   ├── ignored-keywords/
-│   │   │   │   └── page.tsx           # Cấu hình từ khóa loại trừ
+│   │   │   │   └── page.tsx           # Trang cấu hình danh sách từ khóa rác
 │   │   │   ├── price-history/
-│   │   │   │   └── page.tsx           # Lịch sử thay đổi giá
+│   │   │   │   └── page.tsx           # Trang xem biểu đồ và lịch sử thay đổi giá
 │   │   │   └── users/
-│   │   │       └── page.tsx           # Quản lý tài khoản nhân viên
-│   │   ├── layout.tsx                 # Root layout
-│   │   └── page.tsx                   # Redirect → /dashboard hoặc /login
-│   ├── components/
-│   │   ├── ui/                        # Các component UI tái sử dụng
-│   │   ├── layout/                    # Sidebar, Header, Footer
-│   │   └── features/                  # Component theo tính năng
-│   │       ├── SelectorPicker.tsx     # ⭐ Component Point & Click chọn selector
-│   │       ├── PriceComparisonTable.tsx
-│   │       └── PriceHistoryChart.tsx
-│   ├── lib/
-│   │   ├── api.ts                     # Fetch wrapper
-│   │   └── auth.ts                    # NextAuth configuration
-│   ├── actions/                       # Server Actions (revalidateTag)
-│   └── types/                         # TypeScript interfaces/types
-├── auth.ts                            # NextAuth root config
-├── middleware.ts                       # Bảo vệ route bằng NextAuth
-├── .env.local
+│   │   │       └── page.tsx           # Trang quản lý danh sách tài khoản nhân viên
+│   │   ├── layout.tsx                 # Root layout: Nơi bọc thẻ html, body, cấu hình font chữ và theme Ant Design
+│   │   └── page.tsx                   # Trang Root (/) - Thường dùng để redirect thẳng vào /dashboard hoặc /login
+│   ├── components/                    # Chứa tất cả các React Components
+│   │   ├── ui/                        # Các component UI nhỏ dùng chung (nút bấm, input, thông báo)
+│   │   ├── layout/                    # Các khối layout lớn (SidebarMenu.tsx, AdminHeader.tsx)
+│   │   └── features/                  # Các component phức tạp gắn liền với một tính năng lớn
+│   │       ├── SelectorPicker.tsx     # ⭐ Component chứa logic iframe, highlight element và postMessage
+│   │       ├── PriceComparisonTable.tsx # Component bảng chứa logic merge data so khớp
+│   │       └── PriceHistoryChart.tsx  # Component vẽ biểu đồ (dùng thư viện Recharts hoặc Chart.js)
+│   ├── lib/                           # Chứa các file tiện ích cấu hình và thư viện
+│   │   ├── api.ts                     # Fetch wrapper: tự động lấy JWT từ session gắn vào Header Authorization
+│   │   └── auth.ts                    # File cấu hình NextAuth provider (gọi lên NestJS)
+│   ├── actions/                       # Nơi chứa Next.js Server Actions (Thao tác gọi API an toàn từ phía Server)
+│   │   ├── auth.action.ts             # Các hàm gọi API liên quan xác thực (login, register, verify)
+│   │   ├── scraping.action.ts         # Các hàm gọi API cào dữ liệu, AI selector, đối chiếu giá
+│   │   └── admin.action.ts            # Các hàm gọi API lấy thống kê, CRUD danh mục, user
+│   └── types/                         # Chứa các interface/type TypeScript định nghĩa kiểu dữ liệu thống nhất
+│       ├── user.type.ts               # Định nghĩa interface IUser, Role
+│       ├── competitor.type.ts         # Định nghĩa interface ICompetitor, ISelector
+│       ├── product.type.ts            # Định nghĩa interface IProduct, ICategory
+│       └── scraping.type.ts           # Định nghĩa cấu trúc kết quả cào, kết quả so khớp
+├── auth.ts                            # NextAuth entry point (cấu hình chính yếu của Auth.js)
+├── middleware.ts                       # Middleware chặn các route (admin) nếu người dùng chưa đăng nhập
+├── .env.local                         # Biến môi trường Next.js (NEXT_PUBLIC_API_URL, NEXTAUTH_SECRET)
 ├── package.json
-├── tailwind.config.ts
-└── tsconfig.json
+├── tailwind.config.ts                 # Cấu hình Tailwind CSS
+└── tsconfig.json                      # Cấu hình TypeScript cho Frontend
 ```
 
 ### 4.2. Danh sách Màn hình Frontend
