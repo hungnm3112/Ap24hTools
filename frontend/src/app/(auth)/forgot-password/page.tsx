@@ -1,52 +1,76 @@
 'use client';
-
-// ==========================================
-// BƯỚC 1: IMPORT THƯ VIỆN
-// ==========================================
-// TODO 1.1: Import React và useState từ 'react'
-// TODO 1.2: Import { Form, Input, Button, message } từ 'antd'
-// TODO 1.3: Import thẻ <Link> từ 'next/link'
-// TODO 1.4: Import hàm 'forgotPasswordAction' từ '@/actions/auth.action'
+import React, { useState } from 'react';
+import { Form, Input, Button, App } from 'antd';
+import Link from 'next/link';
+import { forgotPasswordAction } from '@/actions/auth.action';
 
 export default function ForgotPasswordPage() {
-  // ==========================================
-  // BƯỚC 2: KHỞI TẠO HOOKS & STATE
-  // ==========================================
-  // TODO 2.1: Khởi tạo state 'loading' (mặc định false)
-  // TODO 2.2: Khởi tạo state 'isSent' (kiểu boolean, mặc định false) để kiểm tra xem đã gửi email thành công chưa. 
-  // (Nếu isSent = true, ta sẽ ẩn form và hiện thông báo đã gửi)
+  const { message } = App.useApp();
+  const [loading, setLoading] = useState(false);
+  const [isSent, setIsSent] = useState(false); // Trạng thái kiểm tra đã gửi form hay chưa
 
-  // ==========================================
-  // BƯỚC 3: HÀM XỬ LÝ SUBMIT FORM
-  // ==========================================
-  // TODO 3.1: Viết hàm async 'onFinish(values)'
-  // - Bật loading
-  // - Gọi hàm forgotPasswordAction(values.email)
-  // - Nếu success: báo message thành công VÀ set state isSent thành true
-  // - Nếu thất bại: báo message lỗi
-  // - Tắt loading bằng finally
+  const onFinish = async (values: { email: string }) => {
+    try {
+      setLoading(true);
+      const result = await forgotPasswordAction(values.email);
+      if (result.success) {
+        message.success(result.message);
+        setIsSent(true); // Ẩn form và hiện thông báo
+      } else {
+        message.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // ==========================================
-  // BƯỚC 4: RENDER GIAO DIỆN (JSX)
-  // ==========================================
-  // TODO 4.1: Trả về giao diện kiểm tra điều kiện isSent (Sử dụng toán tử 3 ngôi hoặc if sớm)
-  // Nếu isSent === true: 
-  //   - Trả về khối <div> hiển thị dòng chữ: "Một email chứa hướng dẫn khôi phục mật khẩu đã được gửi đến bạn."
-  //   - Kèm theo một thẻ <Link href="/login"> Quay lại đăng nhập </Link>
-  
-  // Nếu isSent === false, render form nhập email:
+  // Nếu đã gửi form thành công, ẩn form đi và chỉ hiện cục thông báo này
+  if (isSent) {
+    return (
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-4">Kiểm tra email</h2>
+        <p className="mb-6 text-gray-600">
+          Một email chứa hướng dẫn khôi phục mật khẩu đã được gửi đến bạn.
+        </p>
+        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          Quay lại trang Đăng nhập
+        </Link>
+      </div>
+    );
+  }
+
+  // Giao diện mặc định (Form nhập email)
   return (
     <div>
-      {/* TODO 4.2: Thẻ <h2> "Quên mật khẩu" */}
-      {/* TODO 4.3: Thẻ <Form onFinish={onFinish} layout="vertical"> */}
-        
-        {/* TODO 4.4: <Form.Item> cho "Email đăng ký" (name="email", required, Input type="email") */}
-        
-        {/* TODO 4.5: <Form.Item> chứa thẻ <Button> Gửi yêu cầu (type="primary", htmlType="submit", block, loading={loading}) */}
-        
-      {/* Đóng form */}
-      
-      {/* TODO 4.6: Phía dưới form, thẻ <p> chứa thẻ <Link href="/login"> Quay lại đăng nhập </Link> */}
+      <h2 className="text-2xl font-bold mb-4 text-center">Quên mật khẩu</h2>
+      <p className="mb-6 text-gray-600 text-center">
+        Nhập địa chỉ email của bạn, chúng tôi sẽ gửi mã khôi phục mật khẩu.
+      </p>
+
+      <Form onFinish={onFinish} layout="vertical" style={{ maxWidth: 400, margin: '0 auto' }}>
+        <Form.Item
+          name="email"
+          label="Email đăng ký"
+          rules={[
+            { required: true, message: 'Vui lòng nhập email!' },
+            { type: 'email', message: 'Email không hợp lệ!' }
+          ]}
+        >
+          <Input type="email" />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" block loading={loading}>
+            Gửi yêu cầu
+          </Button>
+        </Form.Item>
+      </Form>
+
+      <p className="mt-4 text-center text-sm text-gray-600">
+        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          Quay lại Đăng nhập
+        </Link>
+      </p>
     </div>
   );
 }

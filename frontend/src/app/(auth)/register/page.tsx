@@ -11,12 +11,13 @@
 // TODO 1.5: Import thẻ <Link> từ 'next/link' (để làm nút quay lại trang đăng nhập)
 
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, App } from 'antd';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { registerAction } from '@/actions/auth.action';
 
 export default function RegisterPage() {
+  const { message } = App.useApp();
   // ==========================================
   // BƯỚC 2: KHỞI TẠO HOOKS & STATE
   // ==========================================

@@ -11,13 +11,14 @@
 // TODO 1.1: Import React và useState từ thư viện 'react'
 import React, { useState } from 'react';
 // TODO 1.2: Import { Form, Input, Button, message } từ thư viện UI 'antd'
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, App } from 'antd';
 // TODO 1.3: Import hook useRouter từ 'next/navigation' (Lưu ý: Không dùng 'next/router' ở App Router)
 import { useRouter } from 'next/navigation';
 // TODO 1.4: Import hàm loginAction từ file '@/actions/auth.action'
 import { loginAction } from '@/actions/auth.action';
 
 export default function LoginPage() {
+  const { message } = App.useApp();
   // ==========================================
   // BƯỚC 2: KHỞI TẠO HOOKS & STATE
   // ==========================================

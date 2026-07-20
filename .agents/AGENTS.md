@@ -11,3 +11,7 @@ When instructed to implement a feature or a part of the roadmap:
    - `TODO` markers for each specific block of code that needs to be written.
    - Explanations of *why* certain architectural choices are made (e.g., why 'use client' is used, why dependency injection is applied in NestJS).
 4. The goal is to allow the user to use their IDE's Copilot/IntelliSense feature to trigger code generation based on your detailed comments. This hands-on approach helps the user understand the syntax, the TypeScript definitions, and the framework flow much better than simply copying and pasting finished code.
+
+## Update: Adaptive Learning Workflow
+- Once a user has mastered a specific concept or pattern (e.g., basic forms, simple state, calling actions), you MUST generate the full code implementation for those repeated patterns to accelerate the project.
+- Only use the "Skeleton" approach for **newly introduced concepts** (as tracked in `lesson_progress.md`).
