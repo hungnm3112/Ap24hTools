@@ -533,18 +533,19 @@ flowchart TD
 - [x] Tạo cấu trúc thư mục chuẩn (app, components, lib, types, actions)
 
 #### 1.2. Dựng UI Auth (Next.js)
-- [ ] Trang Login (`/login`) - Form Ant Design (phone, password)
-- [ ] Trang Register (`/register`) - Form Ant Design (name, phone, email, password)
-- [ ] Trang Verify OTP (`/verify`) - Modal/Form nhập mã OTP
-- [ ] Trang Forgot Password (`/forgot-password`) - Form email → OTP → new password
-- [ ] Layout Auth chung (background, logo, card form giữa màn hình)
+- [x] Trang Login (`/login`) - Form Ant Design (phone, password)
+- [x] Trang Register (`/register`) - Form Ant Design (name, phone, email, password)
+- [x] Trang Verify OTP (`/verify`) - Modal/Form nhập mã OTP
+- [x] Trang Forgot Password (`/forgot-password`) - Form email → OTP → new password
+- [x] Layout Auth chung (background, logo, card form giữa màn hình)
+
 
 ### Phase 2: Giao diện Admin Dashboard (Tuần 2)
 
 #### 2.1. Layout Admin
-- [ ] Sidebar navigation (Ant Design Menu) với các menu: Dashboard, Đối chiếu giá, Đối thủ, Danh mục, Từ khóa, Lịch sử, Nhân viên
-- [ ] Header với thông tin user + nút Logout
-- [ ] Responsive layout (collapse sidebar trên mobile)
+- [x] Sidebar navigation (Ant Design Menu) với các menu: Dashboard, Đối chiếu giá, Đối thủ, Danh mục, Từ khóa, Lịch sử, Nhân viên
+- [x] Header với thông tin user + nút Logout
+- [x] Responsive layout (collapse sidebar trên mobile)
 
 #### 2.2. Các trang Admin (UI tĩnh với mock data)
 - [ ] Dashboard - Cards thống kê + biểu đồ đơn giản
