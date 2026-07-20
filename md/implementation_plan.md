@@ -366,7 +366,9 @@ frontend/
 │   │       └── PriceHistoryChart.tsx  # Component vẽ biểu đồ (dùng thư viện Recharts hoặc Chart.js)
 │   ├── lib/                           # Chứa các file tiện ích cấu hình và thư viện
 │   │   ├── api.ts                     # Fetch wrapper: tự động lấy JWT từ session gắn vào Header Authorization
-│   │   └── auth.ts                    # File cấu hình NextAuth provider (gọi lên NestJS)
+│   │   ├── auth.ts                    # File cấu hình NextAuth provider (gọi lên NestJS)
+│   │   └── mockData/                  # Chứa dữ liệu giả (Mock) phục vụ lập trình UI khi chưa có Backend
+│   │       └── index.ts               # File định nghĩa và xuất (export) dữ liệu giả
 │   ├── actions/                       # Nơi chứa Next.js Server Actions (Thao tác gọi API an toàn từ phía Server)
 │   │   ├── auth.action.ts             # Các hàm gọi API liên quan xác thực (login, register, verify)
 │   │   ├── scraping.action.ts         # Các hàm gọi API cào dữ liệu, AI selector, đối chiếu giá
@@ -525,10 +527,10 @@ flowchart TD
 ### Phase 1: Khởi tạo dự án & Giao diện Auth (Tuần 1)
 
 #### 1.1. Khởi tạo Frontend (Next.js)
-- [ ] Khởi tạo project Next.js 15 với TypeScript, TailwindCSS, App Router
-- [ ] Cài đặt phiên bản mới nhất cho tất cả dependencies (React 19, Next.js 15, v.v.)
-- [ ] Cài đặt Ant Design (`antd`), cấu hình theme
-- [ ] Tạo cấu trúc thư mục chuẩn (app, components, lib, types, actions)
+- [x] Khởi tạo project Next.js 15 với TypeScript, TailwindCSS, App Router
+- [x] Cài đặt phiên bản mới nhất cho tất cả dependencies (React 19, Next.js 15, v.v.)
+- [x] Cài đặt Ant Design (`antd`), cấu hình theme
+- [x] Tạo cấu trúc thư mục chuẩn (app, components, lib, types, actions)
 
 #### 1.2. Dựng UI Auth (Next.js)
 - [ ] Trang Login (`/login`) - Form Ant Design (phone, password)
@@ -665,6 +667,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 # NextAuth
 NEXTAUTH_SECRET=<random-secret>
 NEXTAUTH_URL=http://localhost:3000
+
+# Mock Data (true = Dùng dữ liệu giả không cần gọi Backend, false = gọi API thật)
+NEXT_PUBLIC_USE_MOCK_DATA=true
 ```
 
 ---
