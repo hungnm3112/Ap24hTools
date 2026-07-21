@@ -736,11 +736,11 @@ Mục tiêu: Học cách tạo API chuẩn RESTful, thiết kế Schema Mongoose
 - [x] Tích hợp `bcrypt` để hash password trước khi lưu vào DB
 
 #### 2.2. Module Auth & JWT
-- [ ] Tạo Auth module
-- [ ] Cài đặt `@nestjs/jwt`, `passport-jwt`
-- [ ] Viết API `/auth/register` (Tạo user với `isActive: false`)
-- [ ] Viết API `/auth/login` (Kiểm tra pass, trả về Access Token)
-- [ ] Viết `JwtStrategy` và tạo custom Guard (`JwtAuthGuard`) để bảo vệ các private route
+- [x] Tạo Auth module
+- [x] Cài đặt `@nestjs/jwt`, `passport-jwt`
+- [x] Viết API `/auth/register` (Tạo user với `isActive: false`)
+- [x] Viết API `/auth/login` (Kiểm tra pass, trả về Access Token)
+- [x] Viết `JwtStrategy` và tạo custom Guard (`JwtAuthGuard`) để bảo vệ các private route
 
 #### 2.3. Module Mailer & OTP
 - [ ] Tạo Mail module, cài đặt `nodemailer` và cấu hình SMTP Gmail
