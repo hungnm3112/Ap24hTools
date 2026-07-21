@@ -57,10 +57,11 @@ export class AuthService {
 
   // 3. Đăng Nhập
   async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+    const { phone, password } = loginDto;
     
-    const user = await this.usersService.findByEmail(email);
-    if (!user) throw new UnauthorizedException('Email không chính xác');
+    // Tìm user bằng số điện thoại
+    const user = await this.usersService.findByPhone(phone);
+    if (!user) throw new UnauthorizedException('Số điện thoại không chính xác');
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new UnauthorizedException('Mật khẩu không chính xác');

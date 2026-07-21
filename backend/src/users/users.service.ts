@@ -40,6 +40,11 @@ export class UsersService {
     return this.userModel.findOne({ email });
   }
 
+  // 2b. Hàm tìm User theo số điện thoại (Sử dụng để đăng nhập)
+  async findByPhone(phone: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ phone });
+  }
+
   // 3. Hàm tìm User theo ID
   async findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id);

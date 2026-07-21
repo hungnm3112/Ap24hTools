@@ -13,6 +13,7 @@ async function bootstrap() {
    */
   const app = await NestFactory.create(AppModule);
   app.enableCors(); // Bật CORS để cho phép Frontend gọi API
+  app.setGlobalPrefix('api'); // Thiết lập tiền tố /api cho toàn bộ dự án
   
   /*
    * 1. Cấu hình Global ValidationPipe

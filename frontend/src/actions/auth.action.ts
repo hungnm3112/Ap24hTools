@@ -1,26 +1,26 @@
 'use server';
 import { cookies } from 'next/headers';
 
-export async function loginAction(email: string, password: string) {
+export async function loginAction(phone: string, password: string) {
   const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
   if (isMock) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    if (email === 'admin@gmail.com' && password === '123456') {
+    if (phone === '0329308373' && password === '123456') {
       return {
         success: true,
         message: 'Đăng nhập thành công',
         data: { token: 'fake-jwt', user: { id: '1', name: 'Admin', role: 'admin' } }
       };
     } else {
-      return { success: false, message: 'Email hoặc mật khẩu không chính xác' }
+      return { success: false, message: 'Số điện thoại hoặc mật khẩu không chính xác' }
     }
   } else {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ phone, password }),
       });
       const data = await res.json();
       if (!res.ok) {
