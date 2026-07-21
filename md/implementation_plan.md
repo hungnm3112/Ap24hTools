@@ -730,10 +730,10 @@ Mục tiêu: Nắm được luồng khởi tạo, kiến trúc module/controller
 Mục tiêu: Học cách tạo API chuẩn RESTful, thiết kế Schema Mongoose, phân quyền (Guards).
 
 #### 2.1. Module Users
-- [ ] Dùng Nest CLI tạo module, service, controller cho users
-- [ ] Định nghĩa Mongoose Schema cho User (`phone`, `email`, `password`, `isActive`, `codeId`, `codeExpired`)
-- [ ] Viết các service CRUD cơ bản cho User (tạo mới, tìm theo email/phone)
-- [ ] Tích hợp `bcrypt` để hash password trước khi lưu vào DB
+- [x] Dùng Nest CLI tạo module, service, controller cho users
+- [x] Định nghĩa Mongoose Schema cho User (`phone`, `email`, `password`, `isActive`, `codeId`, `codeExpired`)
+- [x] Viết các service CRUD cơ bản cho User (tạo mới, tìm theo email/phone)
+- [x] Tích hợp `bcrypt` để hash password trước khi lưu vào DB
 
 #### 2.2. Module Auth & JWT
 - [ ] Tạo Auth module
