@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { CategoriesModule } from './categories/categories.module';
+import { CompetitorsModule } from './competitors/competitors.module';
 
 @Module({
   imports: [
@@ -48,6 +49,8 @@ import { CategoriesModule } from './categories/categories.module';
     MailModule,
 
     CategoriesModule,
+
+    CompetitorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
