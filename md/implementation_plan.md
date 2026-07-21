@@ -546,22 +546,47 @@ flowchart TD
   - [x] Tích hợp 100% Frontend - Backend luồng đăng nhập và cấp lại mật khẩu.
 
 ### Phase 3: Quản lý Danh mục, Đối thủ & Setup Scraping (Tích hợp AI)
+
+Để đảm bảo dễ triển khai và kiểm thử, Phase 3 được chia thành 4 bước nhỏ (sub-phases):
+
+#### Phase 3.1: Quản lý Danh mục (Categories CRUD)
 - **Backend:**
-  - [ ] Dùng Nest CLI tạo module, controller, service cho Categories và Competitors.
-  - [ ] Định nghĩa Schema Category (`name`, `isActive`).
-  - [ ] Định nghĩa Schema Competitor (`name`, `domain`, `selectors`, `scrapingUrls[]`) - nhúng link cào vào schema.
-  - [ ] Cung cấp API CRUD cho Categories và Competitors.
-  - [ ] Cài đặt `playwright` và `cheerio`.
-  - [ ] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ phục vụ cho màn hình Setup (Iframe).
-  - [ ] Viết API `POST /scraping/ai-selector` kết nối Gemini/OpenAI phân tích HTML snippet → gợi ý CSS selector.
+  - [ ] Dùng Nest CLI tạo module `categories`.
+  - [ ] Định nghĩa Schema Category (`name`, `isActive`, `parentId`). Hỗ trợ cấu trúc cây (Hierarchy) bằng Parent Reference.
+  - [ ] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Categories. Trả về dạng Tree Array để frontend dễ render.
 - **Frontend:**
-  - [ ] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table.
-  - [ ] Dựng UI trang Quản lý Đối thủ (`/competitors`).
-  - [ ] Form Tạo/Sửa Đối thủ sẽ là một quy trình gộp (Wizard/Tabs):
-    - **Bước 1:** Nhập thông tin cơ bản & Thêm danh sách URL cần cào (`scrapingUrls`).
-    - **Bước 2 (Setup Selector):** Nhúng Iframe (thông qua API Proxy). Admin có thể "Point & Click" ngay tại đây.
-    - **Bước 3:** Tích hợp gọi AI để tự động sinh CSS selector từ phần tử vừa click, lưu trực tiếp vào cấu hình đối thủ.
-  - [ ] Viết Server Actions cho CRUD và tích hợp hoàn chỉnh luồng tạo đối thủ & cấu hình cào.
+  - [ ] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table (tự động hiện cấu trúc cây).
+  - [ ] Tạo Form Add/Edit Modal cho Danh mục (Sử dụng TreeSelect để chọn danh mục cha).
+  - [ ] Viết Server Actions gọi API Categories và tích hợp lên UI.
+
+#### Phase 3.2: Quản lý Đối thủ & Danh sách URL (Competitors CRUD)
+- **Backend:**
+  - [ ] Dùng Nest CLI tạo module `competitors`.
+  - [ ] Định nghĩa Schema Competitor (`name`, `domain`, `selectors`, `scrapingUrls[]`) - nhúng link cào vào schema.
+  - [ ] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Competitors.
+- **Frontend:**
+  - [ ] Dựng UI trang Quản lý Đối thủ (`/competitors`) bằng Ant Design Table.
+  - [ ] Xây dựng form tạo Đối thủ (Bước 1): Nhập thông tin cơ bản & Quản lý danh sách URL cần cào (chọn danh mục + URL).
+  - [ ] Viết Server Actions gọi API Competitors và tích hợp lên UI.
+
+#### Phase 3.3: Tích hợp Iframe & Proxy (Playwright Setup)
+- **Backend:**
+  - [ ] Cài đặt `playwright` và `cheerio`.
+  - [ ] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ, chặn redirect, xóa script gây nhiễu, inject script bắt click.
+- **Frontend:**
+  - [ ] Xây dựng Bước 2 cho form Setup Đối thủ: Hiển thị giao diện Iframe.
+  - [ ] Tích hợp API Proxy để render trang đích trong Iframe.
+  - [ ] Lắng nghe sự kiện click (postMessage) từ Iframe để lấy snippet HTML của phần tử được chọn.
+
+#### Phase 3.4: Tích hợp AI sinh CSS Selector
+- **Backend:**
+  - [ ] Cài đặt thư viện AI (`@google/generative-ai` hoặc `openai`).
+  - [ ] Viết API `POST /scraping/ai-selector` nhận HTML snippet, gọi AI phân tích và trả về CSS Selector tối ưu.
+- **Frontend:**
+  - [ ] Xây dựng Bước 3: Đẩy HTML snippet lên Backend, nhận gợi ý Selector từ AI.
+  - [ ] Hiển thị Selector, cho phép Admin xác nhận/chỉnh sửa.
+  - [ ] Test thử selector ngay trên Iframe (Highlight các phần tử match).
+  - [ ] Gắn Action lưu hoàn chỉnh toàn bộ Cấu hình (Thông tin + URLs + Selectors) vào Database.
 
 ### Phase 4: Thuật toán So khớp & Cập nhật Giá (Matching & Auto-Update)
 - **Backend:**
