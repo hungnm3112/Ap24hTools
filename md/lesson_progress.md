@@ -25,9 +25,12 @@
 16. **Giao tiếp Frontend - Backend**: Dùng Server Actions để `fetch` API trực tiếp, giấu kín endpoint với người dùng.
 17. **Xử lý Cookie Server-side**: Lưu trữ và quản lý `accessToken` an toàn bằng `next/headers`.
 
-## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3: CRUD Danh mục & Đối thủ)
-1. **NestJS CRUD Generator**: Tạo tự động khung module/controller/service bằng Nest CLI.
-2. **Thiết kế API RESTful chuẩn**: Phân chia định tuyến (Routing) cho GET, POST, PATCH, DELETE.
-3. **Mongoose Relationships**: Thiết lập quan hệ tham chiếu (Reference) giữa các Schema.
-4. **Ant Design Table**: Render dữ liệu từ API dưới dạng bảng động (Data Table).
-5. **UI/UX Tương tác**: Kết hợp Modal Form để Thêm/Sửa/Xóa dữ liệu trực tiếp trên giao diện Frontend, tự động gọi API Backend thay đổi CSDL.
+### Fullstack CRUD (Danh mục)
+28. **NestJS CRUD Generator**: Dùng `npx nest g module/controller/service` để tạo khung sườn API nhanh chóng.
+29. **MongoDB Hierarchy Design**: Vận dụng kỹ thuật **Parent Reference** (tham chiếu cha) để thiết kế dữ liệu dạng cây đệ quy trong môi trường NoSQL. Biến đổi dữ liệu phẳng (flat) sang dạng cây bằng Map.
+30. **Ant Design Hierarchy Data**: Tích hợp dữ liệu cây lồng nhau (`children`) tự động render bảng phân cấp và Component `TreeSelect` trong UI quản trị.
+
+## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3.2: CRUD Đối thủ)
+1. **Mongoose Relationships**: Thiết lập quan hệ tham chiếu (Reference) và Nhúng (Embedded) Document phức tạp (scrapingUrls).
+2. **Form Động (Dynamic Form)**: Sử dụng Component `Form.List` của Ant Design để tạo bảng nhập liệu mảng con tự động (Thêm/xóa dòng URL).
+3. **Thiết kế UI Tab/Wizard**: Phân tách logic form phức tạp thành nhiều luồng (Bước 1, Bước 2).

@@ -551,13 +551,13 @@ flowchart TD
 
 #### Phase 3.1: Quản lý Danh mục (Categories CRUD)
 - **Backend:**
-  - [ ] Dùng Nest CLI tạo module `categories`.
-  - [ ] Định nghĩa Schema Category (`name`, `isActive`, `parentId`). Hỗ trợ cấu trúc cây (Hierarchy) bằng Parent Reference.
-  - [ ] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Categories. Trả về dạng Tree Array để frontend dễ render.
+  - [x] Dùng Nest CLI tạo module `categories`.
+  - [x] Định nghĩa Schema Category (`name`, `isActive`, `parentId`). Hỗ trợ cấu trúc cây (Hierarchy) bằng Parent Reference.
+  - [x] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Categories. Trả về dạng Tree Array để frontend dễ render.
 - **Frontend:**
-  - [ ] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table (tự động hiện cấu trúc cây).
-  - [ ] Tạo Form Add/Edit Modal cho Danh mục (Sử dụng TreeSelect để chọn danh mục cha).
-  - [ ] Viết Server Actions gọi API Categories và tích hợp lên UI.
+  - [x] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table (tự động hiện cấu trúc cây).
+  - [x] Tạo Form Add/Edit Modal cho Danh mục (Sử dụng TreeSelect để chọn danh mục cha).
+  - [x] Viết Server Actions gọi API Categories và tích hợp lên UI.
 
 #### Phase 3.2: Quản lý Đối thủ & Danh sách URL (Competitors CRUD)
 - **Backend:**
