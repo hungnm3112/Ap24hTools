@@ -545,34 +545,25 @@ flowchart TD
   - [x] Lưu trữ JWT Token vào httpOnly Cookie (`next/headers`) an toàn.
   - [x] Tích hợp 100% Frontend - Backend luồng đăng nhập và cấp lại mật khẩu.
 
-### Phase 3: Quản lý Danh mục & Đối thủ (CRUD + Cấu hình Cào)
+### Phase 3: Quản lý Danh mục, Đối thủ & Setup Scraping (Tích hợp AI)
 - **Backend:**
   - [ ] Dùng Nest CLI tạo module, controller, service cho Categories và Competitors.
-  - [ ] Định nghĩa Schema Category (`name`, `isActive`) - bảng tra cứu đơn giản.
-  - [ ] Định nghĩa Schema Competitor (`name`, `domain`, `selectors`, `scrapingUrls[]`) - nhúng link cào.
-  - [ ] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Categories.
-  - [ ] Cung cấp API CRUD cho Competitors (bao gồm quản lý danh sách scrapingUrls nhúng bên trong).
-- **Frontend:**
-  - [ ] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table (CRUD đơn giản).
-  - [ ] Dựng UI trang Quản lý Đối thủ (`/competitors`) bằng Ant Design Table.
-  - [ ] Form tạo/sửa Đối thủ: bao gồm nhập CSS Selectors + bảng con quản lý scrapingUrls (chọn danh mục + nhập URL).
-  - [ ] Viết Server Actions gọi API CRUD Categories & Competitors.
-  - [ ] Tích hợp tính năng Thêm/Sửa/Xóa trực tiếp lên UI, tự động refresh bảng.
-
-### Phase 4: Core Scraping & Point & Click (Tích hợp AI & Playwright)
-- **Backend:**
+  - [ ] Định nghĩa Schema Category (`name`, `isActive`).
+  - [ ] Định nghĩa Schema Competitor (`name`, `domain`, `selectors`, `scrapingUrls[]`) - nhúng link cào vào schema.
+  - [ ] Cung cấp API CRUD cho Categories và Competitors.
   - [ ] Cài đặt `playwright` và `cheerio`.
-  - [ ] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ, vô hiệu hóa link và inject JS.
+  - [ ] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ phục vụ cho màn hình Setup (Iframe).
   - [ ] Viết API `POST /scraping/ai-selector` kết nối Gemini/OpenAI phân tích HTML snippet → gợi ý CSS selector.
-  - [ ] Viết API `POST /scraping/run` chạy cào thủ công 1 lượt.
 - **Frontend:**
-  - [ ] Xây dựng màn hình Setup Selector (`/competitors/:id/setup`).
-  - [ ] Tích hợp Iframe hiển thị web đối thủ qua Proxy API.
-  - [ ] Xử lý sự kiện click & highlight phần tử trong Iframe (postMessage).
-  - [ ] Gửi HTML snippet lên Backend nhờ AI gợi ý selector.
-  - [ ] Admin xác nhận và lưu CSS Selector vào cấu hình đối thủ.
+  - [ ] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table.
+  - [ ] Dựng UI trang Quản lý Đối thủ (`/competitors`).
+  - [ ] Form Tạo/Sửa Đối thủ sẽ là một quy trình gộp (Wizard/Tabs):
+    - **Bước 1:** Nhập thông tin cơ bản & Thêm danh sách URL cần cào (`scrapingUrls`).
+    - **Bước 2 (Setup Selector):** Nhúng Iframe (thông qua API Proxy). Admin có thể "Point & Click" ngay tại đây.
+    - **Bước 3:** Tích hợp gọi AI để tự động sinh CSS selector từ phần tử vừa click, lưu trực tiếp vào cấu hình đối thủ.
+  - [ ] Viết Server Actions cho CRUD và tích hợp hoàn chỉnh luồng tạo đối thủ & cấu hình cào.
 
-### Phase 5: Thuật toán So khớp & Cập nhật Giá (Matching & Auto-Update)
+### Phase 4: Thuật toán So khớp & Cập nhật Giá (Matching & Auto-Update)
 - **Backend:**
   - [ ] Viết thuật toán chuẩn hóa tên SP (loại bỏ từ khóa rác) và Token Matching (so khớp tỷ lệ >= 60%).
   - [ ] Cấu hình Cronjob (`@nestjs/schedule`) chạy tự động cào giá định kỳ theo ngày.
@@ -584,7 +575,7 @@ flowchart TD
   - [ ] Hiển thị thông tin So sánh (Giá AP24h vs Giá Đối thủ, % Chênh lệch, Trạng thái).
   - [ ] Gắn API cho phép Admin click nút Duyệt/Từ chối (Approve/Reject).
 
-### Phase 6: Thống kê & Polish (Dashboard & Price History)
+### Phase 5: Thống kê & Polish (Dashboard & Price History)
 - **Backend:**
   - [ ] Viết API tổng hợp số liệu thống kê (tổng sản phẩm, tổng từ khóa, đối thủ).
   - [ ] Thiết kế bảng `price_histories` ghi nhận mọi thay đổi giá.
