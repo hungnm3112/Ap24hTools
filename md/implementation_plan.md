@@ -743,10 +743,10 @@ Mục tiêu: Học cách tạo API chuẩn RESTful, thiết kế Schema Mongoose
 - [x] Viết `JwtStrategy` và tạo custom Guard (`JwtAuthGuard`) để bảo vệ các private route
 
 #### 2.3. Module Mailer & OTP
-- [ ] Tạo Mail module, cài đặt `nodemailer` và cấu hình SMTP Gmail
-- [ ] Cập nhật logic `/auth/register`: Sinh UUID cho `codeId` và gửi mail OTP
-- [ ] Viết API `/auth/verify`: Kiểm tra OTP hợp lệ và cập nhật `isActive: true`
-- [ ] Viết API `/auth/forgot-password` và `/auth/reset-password`
+- [x] Tạo Mail module, cài đặt `nodemailer` và cấu hình SMTP Gmail
+- [x] Cập nhật logic `/auth/register`: Sinh UUID cho `codeId` và gửi mail OTP
+- [x] Viết API `/auth/verify`: Kiểm tra OTP hợp lệ và cập nhật `isActive: true`
+- [x] Viết API `/auth/forgot-password` và `/auth/reset-password`
 
 ### Phase 3: Quản lý Danh mục & Đối thủ (CRUD cơ bản)
 Mục tiêu: Nắm vững các thao tác CRUD và thiết kế quan hệ Database.

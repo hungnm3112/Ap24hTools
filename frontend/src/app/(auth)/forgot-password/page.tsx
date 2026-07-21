@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, App } from 'antd';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { forgotPasswordAction } from '@/actions/auth.action';
 
 export default function ForgotPasswordPage() {
   const { message } = App.useApp();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [isSent, setIsSent] = useState(false); // Trạng thái kiểm tra đã gửi form hay chưa
 
   const onFinish = async (values: { email: string }) => {
     try {
@@ -15,7 +16,7 @@ export default function ForgotPasswordPage() {
       const result = await forgotPasswordAction(values.email);
       if (result.success) {
         message.success(result.message);
-        setIsSent(true); // Ẩn form và hiện thông báo
+        router.push('/reset-password?email=' + encodeURIComponent(values.email));
       } else {
         message.error(result.message);
       }
@@ -23,21 +24,6 @@ export default function ForgotPasswordPage() {
       setLoading(false);
     }
   };
-
-  // Nếu đã gửi form thành công, ẩn form đi và chỉ hiện cục thông báo này
-  if (isSent) {
-    return (
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-4">Kiểm tra email</h2>
-        <p className="mb-6 text-gray-600">
-          Một email chứa hướng dẫn khôi phục mật khẩu đã được gửi đến bạn.
-        </p>
-        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-          Quay lại trang Đăng nhập
-        </Link>
-      </div>
-    );
-  }
 
   // Giao diện mặc định (Form nhập email)
   return (

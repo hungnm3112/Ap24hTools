@@ -40,7 +40,7 @@ export default function RegisterPage() {
     const result = await registerAction(values.name, values.phone, values.email, values.password);
     if (result.success) {
       message.success(result.message);
-      router.push('/verify');
+      router.push('/verify?email=' + encodeURIComponent(values.email));
     } else {
       message.error(result.message);
     }

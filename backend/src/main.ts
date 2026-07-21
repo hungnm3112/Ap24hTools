@@ -12,6 +12,7 @@ async function bootstrap() {
    * Nó sẽ tự động đệ quy và khởi tạo tất cả các Module, Controller, Service được liên kết bên trong AppModule.
    */
   const app = await NestFactory.create(AppModule);
+  app.enableCors(); // Bật CORS để cho phép Frontend gọi API
   
   /*
    * 1. Cấu hình Global ValidationPipe

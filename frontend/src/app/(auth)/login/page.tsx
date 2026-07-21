@@ -38,9 +38,9 @@ export default function LoginPage() {
   //   + Nếu true: Dùng message.success() báo thành công, sau đó dùng router.push() chuyển sang '/dashboard'
   //   + Nếu false: Dùng message.error() hiển thị thông báo lỗi từ kết quả
   // - Dùng khối try/finally hoặc gọi lệnh set lại loading thành false ở cuối cùng.
-  const onFinish = async (values: { phone: string; password: string }) => {
+  const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
-    const result = await loginAction(values.phone, values.password);
+    const result = await loginAction(values.email, values.password);
     if (result.success) {
       message.success(result.message);
       router.push('/dashboard');
@@ -92,11 +92,11 @@ export default function LoginPage() {
         */}
       <Form onFinish={onFinish} layout="vertical" style={{ maxWidth: 400, margin: '0 auto' }}>
         <Form.Item
-          name="phone"
-          label="Số điện thoại"
-          rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+          name="email"
+          label="Email"
+          rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
         >
-          <Input />
+          <Input type="email" />
         </Form.Item>
         <Form.Item
           name="password"

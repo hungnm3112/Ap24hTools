@@ -7,9 +7,6 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  /*
-   * Dùng @InjectModel(User.name) để NestJS tiêm (inject) class Model của Mongoose vào đây.
-   */
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   // 1. Hàm tạo mới User
@@ -25,10 +22,6 @@ export class UsersService {
       throw new BadRequestException('Email hoặc Số điện thoại đã được sử dụng!');
     }
 
-    /*
-     * Mã hoá (Hash) mật khẩu bằng bcrypt.
-     * Số 10 (salt rounds) là mức độ an toàn phổ biến, băm càng nhiều vòng càng an toàn nhưng tốn CPU.
-     */
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -50,5 +43,20 @@ export class UsersService {
   // 3. Hàm tìm User theo ID
   async findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id);
+  }
+
+  // 4. Cập nhật mã OTP và thời gian hết hạn
+  async updateCodeId(email: string, codeId: string, codeExpired: Date) {
+    return this.userModel.updateOne({ email }, { codeId, codeExpired });
+  }
+
+  // 5. Kích hoạt user và xóa OTP
+  async activateUser(email: string) {
+    return this.userModel.updateOne({ email }, { isActive: true, codeId: null, codeExpired: null });
+  }
+
+  // 6. Đổi mật khẩu mới và xóa OTP
+  async updatePassword(email: string, newPasswordHash: string) {
+    return this.userModel.updateOne({ email }, { password: newPasswordHash, codeId: null, codeExpired: null });
   }
 }
