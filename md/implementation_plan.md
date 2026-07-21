@@ -700,3 +700,98 @@ cd frontend && npm run build        # Kiểm tra build thành công
 
 > [!NOTE]
 > **Cách làm việc:** Bạn sẽ tự tay code từng file theo thứ tự trong Plan, sử dụng gợi ý IDE (IntelliSense). Tôi sẽ đóng vai trò Mentor - hướng dẫn logic, review code, và giải đáp thắc mắc khi bạn gặp vấn đề ở từng bước.
+
+---
+
+## 11. Kế hoạch Học tập & Thực hành Backend (NestJS) chi tiết
+
+Do Frontend phần Auth (Giao diện) đã hoàn thiện, chúng ta sẽ bắt tay vào làm Backend NestJS để cung cấp API thực tế cho Frontend. Kế hoạch được chia thành các Phase nhỏ theo dạng checklist để bạn dễ theo dõi tiến độ:
+
+### Phase 1: Khởi tạo & Cơ bản (Foundation)
+Mục tiêu: Nắm được luồng khởi tạo, kiến trúc module/controller/service của NestJS.
+
+#### 1.1. Khởi tạo dự án
+- [x] Cài đặt Nest CLI (`npm i -g @nestjs/cli`)
+- [x] Khởi tạo project `backend` bằng lệnh `nest new backend`
+- [x] Dọn dẹp các file boilerplate không cần thiết (`app.controller.spec.ts`...)
+
+#### 1.2. Cấu hình Môi trường & Database
+- [x] Cài đặt `@nestjs/config` để quản lý biến môi trường
+- [x] Tạo file `.env` (chứa `MONGODB_URI`, `PORT`)
+- [x] Cài đặt `@nestjs/mongoose` và `mongoose`
+- [x] Cấu hình kết nối MongoDB trong `AppModule`
+
+#### 1.3. Cấu hình Global
+- [x] Cài đặt `class-validator` và `class-transformer`
+- [x] Thiết lập Global `ValidationPipe` trong `main.ts` để tự động validate DTO
+- [x] Tạo Global `ExceptionFilter` để format chuẩn JSON trả về khi có lỗi
+
+### Phase 2: Auth & Users (Cung cấp API cho Frontend)
+Mục tiêu: Học cách tạo API chuẩn RESTful, thiết kế Schema Mongoose, phân quyền (Guards).
+
+#### 2.1. Module Users
+- [ ] Dùng Nest CLI tạo module, service, controller cho users
+- [ ] Định nghĩa Mongoose Schema cho User (`phone`, `email`, `password`, `isActive`, `codeId`, `codeExpired`)
+- [ ] Viết các service CRUD cơ bản cho User (tạo mới, tìm theo email/phone)
+- [ ] Tích hợp `bcrypt` để hash password trước khi lưu vào DB
+
+#### 2.2. Module Auth & JWT
+- [ ] Tạo Auth module
+- [ ] Cài đặt `@nestjs/jwt`, `passport-jwt`
+- [ ] Viết API `/auth/register` (Tạo user với `isActive: false`)
+- [ ] Viết API `/auth/login` (Kiểm tra pass, trả về Access Token)
+- [ ] Viết `JwtStrategy` và tạo custom Guard (`JwtAuthGuard`) để bảo vệ các private route
+
+#### 2.3. Module Mailer & OTP
+- [ ] Tạo Mail module, cài đặt `nodemailer` và cấu hình SMTP Gmail
+- [ ] Cập nhật logic `/auth/register`: Sinh UUID cho `codeId` và gửi mail OTP
+- [ ] Viết API `/auth/verify`: Kiểm tra OTP hợp lệ và cập nhật `isActive: true`
+- [ ] Viết API `/auth/forgot-password` và `/auth/reset-password`
+
+### Phase 3: Quản lý Danh mục & Đối thủ (CRUD cơ bản)
+Mục tiêu: Nắm vững các thao tác CRUD và thiết kế quan hệ Database.
+
+#### 3.1. Module Categories
+- [ ] Tạo module, controller, service cho Categories
+- [ ] Định nghĩa Schema Category
+- [ ] Viết các API CRUD (GET, POST, PUT, DELETE)
+
+#### 3.2. Module Competitors
+- [ ] Tạo module, controller, service cho Competitors
+- [ ] Định nghĩa Schema Competitor (bao gồm config selector CSS: tên, giá, link...)
+- [ ] Viết API CRUD cho đối thủ cạnh tranh
+
+#### 3.3. Module Scraping Configs
+- [ ] Tạo module và Schema `scraping_configs` để map giữa Category và Competitor (link cào)
+- [ ] Viết API quản lý cấu hình cào dữ liệu
+
+### Phase 4: Core Scraping (Tích hợp Playwright & Lập lịch)
+Mục tiêu: Đưa logic automation cũ (Node.js thuần) vào kiến trúc NestJS.
+
+#### 4.1. Scraping Service
+- [ ] Cài đặt `playwright` và `cheerio`
+- [ ] Tạo Scraping module và service
+- [ ] Viết logic khởi chạy Playwright headless, truy cập link, dùng CSS selector trích xuất tên và giá
+- [ ] Lưu kết quả cào vào collection `competitor_products`
+
+#### 4.2. Lập lịch (Cronjob)
+- [ ] Cài đặt `@nestjs/schedule`
+- [ ] Tạo Cronjob tự động gọi Scraping Service hàng ngày lúc nửa đêm
+- [ ] Xử lý luồng chạy tuần tự để không làm quá tải server/bị block IP
+
+### Phase 5: Matching & Tự động Cập nhật Giá (Advanced)
+Mục tiêu: Xử lý logic phức tạp, thao tác tự động cập nhật lên hệ thống khác.
+
+#### 5.1. Thuật toán So khớp (Matching)
+- [ ] Định nghĩa module và service Matching
+- [ ] Chuyển thuật toán chuẩn hóa chuỗi và token matching (>= 60%) từ code cũ sang NestJS
+- [ ] Lưu kết quả so khớp vào bảng `product_matches`
+
+#### 5.2. Luồng duyệt giá
+- [ ] Viết API list danh sách so khớp ra frontend cho Admin xem
+- [ ] Viết API Approve (duyệt) và Reject (từ chối)
+
+#### 5.3. Tự động Auto-Update
+- [ ] Viết service Playwright thao tác trang admin AP24h (đăng nhập bằng session/cookie)
+- [ ] Lắng nghe sự kiện (Event) khi admin Approve: Tự động dùng Playwright nhảy vào sửa giá và nhấn lưu
+- [ ] Xử lý try-catch và retry nếu cấu trúc DOM admin bị thay đổi

@@ -1,17 +1,11 @@
 # Project-Scoped Rules for AutoAP24h
 
-## Learning Workflow: Skeleton over Implementation
-This project is heavily focused on learning and mastering Fullstack Next.js/Nest.js with TypeScript, moving away from traditional Node.js MVC. 
+## Fast-Track Learning Workflow: Full Implementation with Detailed Comments
+Due to time constraints, the project speed is accelerated. 
 
 When instructed to implement a feature or a part of the roadmap:
-1. **Do NOT generate the complete code implementation.**
-2. Instead, create the necessary files and folders.
-3. Inside these files, write a **skeleton** containing only:
-   - Detailed, step-by-step instructions and logic analysis as comments.
-   - `TODO` markers for each specific block of code that needs to be written.
-   - Explanations of *why* certain architectural choices are made (e.g., why 'use client' is used, why dependency injection is applied in NestJS).
-4. The goal is to allow the user to use their IDE's Copilot/IntelliSense feature to trigger code generation based on your detailed comments. This hands-on approach helps the user understand the syntax, the TypeScript definitions, and the framework flow much better than simply copying and pasting finished code.
-
-## Update: Adaptive Learning Workflow
-- Once a user has mastered a specific concept or pattern (e.g., basic forms, simple state, calling actions), you MUST generate the full code implementation for those repeated patterns to accelerate the project.
-- Only use the "Skeleton" approach for **newly introduced concepts** (as tracked in `lesson_progress.md`).
+1. **Generate the complete, working code implementation.** (Do not just generate skeletons or TODOs).
+2. However, to maintain the learning aspect, you MUST include:
+   - Detailed, step-by-step logic analysis as inline comments within the code.
+   - Explanations of *why* certain architectural choices are made (e.g., why 'use client' is used in Next.js, why dependency injection `forRootAsync` is applied in NestJS).
+3. The user will read your generated code and the detailed comments to learn directly from the working implementation.
