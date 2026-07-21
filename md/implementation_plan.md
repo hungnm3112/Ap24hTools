@@ -519,116 +519,77 @@ flowchart TD
 
 ---
 
-## 8. Lộ trình Triển khai (Chia giai đoạn)
+## 8. Lộ trình Triển khai (Fullstack Đồng Thời)
 
 > [!TIP]
-> Trình tự: **Frontend trước → Backend sau** để User vừa dựng UI vừa hình dung luồng, sau đó gắn API. Mỗi giai đoạn sẽ code từng file một qua IDE.
+> Phương pháp tiếp cận: **Triển khai Fullstack theo từng tính năng (Feature-based)**. Thay vì code toàn bộ Backend rồi mới làm Frontend hoặc dùng Mock Data, chúng ta sẽ xây dựng song song: code API xong sẽ tích hợp ngay lên UI.
 
-### Phase 1: Khởi tạo dự án & Giao diện Auth (Tuần 1)
+### Phase 1: Khởi tạo dự án & Nền tảng (Đã hoàn thành)
+- [x] Khởi tạo Frontend (Next.js 15) & Backend (Nest.js 11).
+- [x] Thiết lập MongoDB, biến môi trường (`.env`).
+- [x] Cấu hình Global Backend (ValidationPipe, ExceptionFilter, CORS).
+- [x] Xây dựng UI tĩnh cho Admin Layout (Sidebar, Header, Responsive).
 
-#### 1.1. Khởi tạo Frontend (Next.js)
-- [x] Khởi tạo project Next.js 15 với TypeScript, TailwindCSS, App Router
-- [x] Cài đặt phiên bản mới nhất cho tất cả dependencies (React 19, Next.js 15, v.v.)
-- [x] Cài đặt Ant Design (`antd`), cấu hình theme
-- [x] Tạo cấu trúc thư mục chuẩn (app, components, lib, types, actions)
+### Phase 2: Xác thực Người dùng (Auth & Users) (Đã hoàn thành)
+- **Backend:** 
+  - [x] Tạo Schema & Module Users, thao tác CRUD cơ bản.
+  - [x] Mã hóa mật khẩu bằng `bcrypt`.
+  - [x] Tích hợp JWT, Passport (`JwtStrategy`), `JwtAuthGuard`.
+  - [x] Thiết lập Nodemailer và gửi Email OTP.
+  - [x] Xây dựng API Register, Login, Verify OTP, Forgot Password, Reset Password.
+- **Frontend:**
+  - [x] Dựng UI các trang Login, Register, Verify OTP, Forgot Password, Reset Password.
+  - [x] Viết Server Actions gọi API thật (`fetch`) xuống Backend.
+  - [x] Lưu trữ JWT Token vào Cookie (`next/headers`) an toàn.
+  - [x] Tích hợp 100% Frontend - Backend luồng đăng nhập và cấp lại mật khẩu.
 
-#### 1.2. Dựng UI Auth (Next.js)
-- [x] Trang Login (`/login`) - Form Ant Design (phone, password)
-- [x] Trang Register (`/register`) - Form Ant Design (name, phone, email, password)
-- [x] Trang Verify OTP (`/verify`) - Modal/Form nhập mã OTP
-- [x] Trang Forgot Password (`/forgot-password`) - Form email → OTP → new password
-- [x] Layout Auth chung (background, logo, card form giữa màn hình)
+### Phase 3: Quản lý Danh mục & Đối thủ (CRUD cơ bản)
+- **Backend:**
+  - [ ] Dùng Nest CLI tạo module, controller, service cho Categories và Competitors.
+  - [ ] Định nghĩa Schema Category (`name`, `slug`, `isActive`).
+  - [ ] Định nghĩa Schema Competitor (`name`, `domain`, `selectors` cho CSS).
+  - [ ] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho 2 module trên.
+- **Frontend:**
+  - [ ] Dựng UI trang Quản lý Danh mục (`/categories`) bằng Ant Design Table.
+  - [ ] Dựng UI trang Quản lý Đối thủ (`/competitors`) bằng Ant Design Table.
+  - [ ] Xây dựng Modal Form (Thêm/Sửa) trực tiếp trên trang.
+  - [ ] Viết Server Actions gọi API CRUD (revalidateTag để update data).
+  - [ ] Tích hợp tính năng Thêm/Sửa/Xóa trực tiếp lên UI.
 
+### Phase 4: Core Scraping & Point & Click (Tích hợp AI & Playwright)
+- **Backend:**
+  - [ ] Cài đặt `playwright` và `cheerio`.
+  - [ ] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ, vô hiệu hóa link và inject JS.
+  - [ ] Viết API `POST /scraping/ai-selector` kết nối Gemini/OpenAI phân tích HTML snippet.
+- **Frontend:**
+  - [ ] Xây dựng màn hình Setup Selector (`/competitors/:id/setup`).
+  - [ ] Tích hợp Iframe hiển thị web đối thủ qua Proxy API.
+  - [ ] Xử lý sự kiện click & highlight phần tử trong Iframe (postMessage).
+  - [ ] Gửi HTML snippet lên Backend nhờ AI gợi ý selector.
+  - [ ] Admin xác nhận và lưu CSS Selector vào cấu hình đối thủ.
 
-### Phase 2: Giao diện Admin Dashboard (Tuần 2)
+### Phase 5: Thuật toán So khớp & Cập nhật Giá (Matching & Auto-Update)
+- **Backend:**
+  - [ ] Viết thuật toán chuẩn hóa tên SP (loại bỏ từ khóa rác) và Token Matching (so khớp tỷ lệ >= 60%).
+  - [ ] Cấu hình Cronjob (`@nestjs/schedule`) chạy tự động cào giá định kỳ theo ngày.
+  - [ ] Lưu kết quả so khớp vào bảng `product_matches`.
+  - [ ] Viết API lấy kết quả so khớp, Approve/Reject giá.
+  - [ ] Dùng Playwright giả lập Admin (lưu session) thao tác cập nhật giá tự động lên website AP24h khi có lệnh Approve.
+- **Frontend:**
+  - [ ] Xây dựng Bảng đối chiếu giá (`/price-comparison`).
+  - [ ] Hiển thị thông tin So sánh (Giá AP24h vs Giá Đối thủ, % Chênh lệch, Trạng thái).
+  - [ ] Gắn API cho phép Admin click nút Duyệt/Từ chối (Approve/Reject).
 
-#### 2.1. Layout Admin
-- [x] Sidebar navigation (Ant Design Menu) với các menu: Dashboard, Đối chiếu giá, Đối thủ, Danh mục, Từ khóa, Lịch sử, Nhân viên
-- [x] Header với thông tin user + nút Logout
-- [x] Responsive layout (collapse sidebar trên mobile)
-
-#### 2.2. Các trang Admin (UI tĩnh với mock data)
-- [ ] Dashboard - Cards thống kê + biểu đồ đơn giản
-- [ ] Bảng đối chiếu giá - Ant Design Table (search, filter, sort, bulk action)
-- [ ] Quản lý Đối thủ - Bảng CRUD + nút "Setup Selector"
-- [ ] Setup Selector (Point & Click) - iframe + panel kết quả
-- [ ] Quản lý Danh mục - Bảng CRUD đơn giản
-- [ ] Cấu hình Từ khóa - Tag list + input thêm mới
-- [ ] Lịch sử giá - Bảng + biểu đồ (dùng Chart.js hoặc Recharts)
-- [ ] Quản lý Nhân viên - Bảng CRUD
-
-### Phase 3: Backend Foundation (Tuần 3)
-
-#### 3.1. Khởi tạo Backend (Nest.js)
-- [ ] Khởi tạo project Nest.js v11 với TypeScript
-- [ ] Cài đặt phiên bản mới nhất cho tất cả dependencies
-- [ ] Cấu hình MongoDB (Mongoose) + ConfigService đọc `.env`
-- [ ] Cấu hình `nest-cli.json` cho template Handlebars
-- [ ] Tạo file `.env` (MONGODB_URI, PORT, JWT_SECRET, JWT_ACCESS_TOKEN_EXPIRE, MAIL_*)
-
-#### 3.2. Module Auth + Users
-- [ ] Tạo User Schema (Mongoose)
-- [ ] CRUD Users (Controller, Service, DTO với class-validator)
-- [ ] Hash password với bcrypt
-- [ ] Auth Module: Login (so sánh password → issue JWT)
-- [ ] JWT Strategy + JwtAuthGuard (Global)
-- [ ] Decorator @Public() cho các endpoint không cần auth
-- [ ] Register: tạo tài khoản + sinh OTP + gửi email
-- [ ] Verify: kiểm tra OTP + codeExpired → isActive = true
-- [ ] Retry Active: gửi lại OTP mới
-- [ ] Forgot Password + Reset Password
-
-#### 3.3. Module Email
-- [ ] Cấu hình Nodemailer + Handlebars trong AppModule
-- [ ] Tạo template `register.hbs` + `forgot-password.hbs`
-- [ ] Service gửi email qua Gmail SMTP (Google App Password)
-
-### Phase 4: Backend Business Logic (Tuần 4)
-
-#### 4.1. Modules nghiệp vụ
-- [ ] CRUD Competitors (Schema, Controller, Service, DTO)
-- [ ] CRUD Categories
-- [ ] CRUD Ignored Keywords
-- [ ] CRUD Scraping Configs
-
-#### 4.2. Scraping Module
-- [ ] Playwright Service: proxy tải trang web
-- [ ] Tích hợp Cheerio bóc tách dữ liệu tĩnh để tăng tốc độ
-- [ ] Inject JS highlight + click handler
-- [ ] AI Selector endpoint (gọi Gemini/OpenAI API)
-- [ ] CronJob cào dữ liệu hàng ngày
-
-#### 4.3. Matching Module
-- [ ] Thuật toán so khớp tên sản phẩm (token matching, threshold 60%)
-- [ ] Lưu kết quả vào product_matches
-- [ ] API Approve/Reject/Apply
-
-#### 4.4. Price Update Module
-- [ ] Playwright auto-login AP24h admin (sử dụng browser context)
-- [ ] Tự động tìm kiếm sản phẩm → sửa giá → lưu
-- [ ] Ghi lịch sử vào price_histories
-
-### Phase 5: Tích hợp Frontend ↔ Backend (Tuần 5)
-
-#### 5.1. Kết nối Auth
-- [ ] Cấu hình NextAuth (Auth.js v5) với CredentialsProvider
-- [ ] Custom fetch wrapper với Bearer Token
-- [ ] Middleware bảo vệ route
-- [ ] Kết nối trang Login/Register/Verify/Forgot Password với API thật
-
-#### 5.2. Kết nối các trang Admin
-- [ ] Thay mock data bằng API call thật (Server Components + fetch)
-- [ ] Server Actions cho CRUD (revalidateTag)
-- [ ] Kết nối trang Point & Click Selector với API proxy + AI
-- [ ] Kết nối bảng đối chiếu giá với API matching
-- [ ] Kết nối lịch sử giá
-
-### Phase 6: Testing & Polish (Tuần 6)
-
-- [ ] Test toàn bộ luồng end-to-end
-- [ ] Xử lý edge cases (timeout, lỗi mạng, selector bị đổi)
-- [ ] Tối ưu UX (loading states, error messages, toast notifications)
-- [ ] Viết tài liệu hướng dẫn sử dụng
+### Phase 6: Thống kê & Polish (Dashboard & Price History)
+- **Backend:**
+  - [ ] Viết API tổng hợp số liệu thống kê (tổng sản phẩm, tổng từ khóa, đối thủ).
+  - [ ] Thiết kế bảng `price_histories` ghi nhận mọi thay đổi giá.
+  - [ ] API truy xuất Lịch sử giá (`/price-history`).
+- **Frontend:**
+  - [ ] Cập nhật Dashboard: Render số liệu thật và vẽ biểu đồ (Chart.js / Recharts).
+  - [ ] Xây dựng UI trang Lịch sử giá (Table + Biểu đồ đường thay đổi giá).
+  - [ ] Kiểm thử End-to-End toàn bộ hệ thống (Login -> Cào dữ liệu -> Duyệt giá).
+  - [ ] Polish UX/UI (thêm Loading Spinners, Error Toasts, Empty states).
 
 ---
 
@@ -640,7 +601,7 @@ flowchart TD
 MONGODB_URI=mongodb://localhost:27017/autoap24h
 
 # Server
-PORT=8080
+PORT=3001
 
 # JWT
 JWT_SECRET=<uuid-random>
@@ -663,14 +624,10 @@ AP24H_ADMIN_URL=https://ap24h.vn/admin
 ### Frontend `.env.local`
 ```env
 # Backend API
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_URL=http://localhost:3001
 
-# NextAuth
-NEXTAUTH_SECRET=<random-secret>
-NEXTAUTH_URL=http://localhost:3000
-
-# Mock Data (true = Dùng dữ liệu giả không cần gọi Backend, false = gọi API thật)
-NEXT_PUBLIC_USE_MOCK_DATA=true
+# Chế độ gọi API (Hiện tại đã loại bỏ Mock Data hoàn toàn)
+NEXT_PUBLIC_USE_MOCK_DATA=false
 ```
 
 ---
@@ -688,110 +645,14 @@ cd frontend && npm run build        # Kiểm tra build thành công
 ```
 
 ### Manual Verification
-- [ ] Đăng ký tài khoản → nhận OTP email → kích hoạt → đăng nhập thành công
-- [ ] Route `/dashboard` bị chặn khi chưa đăng nhập → redirect về `/login`
+- [x] Đăng ký tài khoản → nhận OTP email → kích hoạt → đăng nhập thành công
 - [ ] CRUD đối thủ + setup selector bằng Point & Click
 - [ ] Chạy cào thủ công → xem kết quả so khớp trên bảng đối chiếu giá
 - [ ] Approve giá → Playwright tự động cập nhật lên AP24h admin
 - [ ] Kiểm tra lịch sử giá sau khi cập nhật
-- [ ] Quên mật khẩu → nhận OTP → đổi mật khẩu mới → đăng nhập lại
+- [x] Quên mật khẩu → nhận OTP → đổi mật khẩu mới → đăng nhập lại
 
 ---
 
 > [!NOTE]
-> **Cách làm việc:** Bạn sẽ tự tay code từng file theo thứ tự trong Plan, sử dụng gợi ý IDE (IntelliSense). Tôi sẽ đóng vai trò Mentor - hướng dẫn logic, review code, và giải đáp thắc mắc khi bạn gặp vấn đề ở từng bước.
-
----
-
-## 11. Kế hoạch Học tập & Thực hành Backend (NestJS) chi tiết
-
-Do Frontend phần Auth (Giao diện) đã hoàn thiện, chúng ta sẽ bắt tay vào làm Backend NestJS để cung cấp API thực tế cho Frontend. Kế hoạch được chia thành các Phase nhỏ theo dạng checklist để bạn dễ theo dõi tiến độ:
-
-### Phase 1: Khởi tạo & Cơ bản (Foundation)
-Mục tiêu: Nắm được luồng khởi tạo, kiến trúc module/controller/service của NestJS.
-
-#### 1.1. Khởi tạo dự án
-- [x] Cài đặt Nest CLI (`npm i -g @nestjs/cli`)
-- [x] Khởi tạo project `backend` bằng lệnh `nest new backend`
-- [x] Dọn dẹp các file boilerplate không cần thiết (`app.controller.spec.ts`...)
-
-#### 1.2. Cấu hình Môi trường & Database
-- [x] Cài đặt `@nestjs/config` để quản lý biến môi trường
-- [x] Tạo file `.env` (chứa `MONGODB_URI`, `PORT`)
-- [x] Cài đặt `@nestjs/mongoose` và `mongoose`
-- [x] Cấu hình kết nối MongoDB trong `AppModule`
-
-#### 1.3. Cấu hình Global
-- [x] Cài đặt `class-validator` và `class-transformer`
-- [x] Thiết lập Global `ValidationPipe` trong `main.ts` để tự động validate DTO
-- [x] Tạo Global `ExceptionFilter` để format chuẩn JSON trả về khi có lỗi
-
-### Phase 2: Auth & Users (Cung cấp API cho Frontend)
-Mục tiêu: Học cách tạo API chuẩn RESTful, thiết kế Schema Mongoose, phân quyền (Guards).
-
-#### 2.1. Module Users
-- [x] Dùng Nest CLI tạo module, service, controller cho users
-- [x] Định nghĩa Mongoose Schema cho User (`phone`, `email`, `password`, `isActive`, `codeId`, `codeExpired`)
-- [x] Viết các service CRUD cơ bản cho User (tạo mới, tìm theo email/phone)
-- [x] Tích hợp `bcrypt` để hash password trước khi lưu vào DB
-
-#### 2.2. Module Auth & JWT
-- [x] Tạo Auth module
-- [x] Cài đặt `@nestjs/jwt`, `passport-jwt`
-- [x] Viết API `/auth/register` (Tạo user với `isActive: false`)
-- [x] Viết API `/auth/login` (Kiểm tra pass, trả về Access Token)
-- [x] Viết `JwtStrategy` và tạo custom Guard (`JwtAuthGuard`) để bảo vệ các private route
-
-#### 2.3. Module Mailer & OTP
-- [x] Tạo Mail module, cài đặt `nodemailer` và cấu hình SMTP Gmail
-- [x] Cập nhật logic `/auth/register`: Sinh UUID cho `codeId` và gửi mail OTP
-- [x] Viết API `/auth/verify`: Kiểm tra OTP hợp lệ và cập nhật `isActive: true`
-- [x] Viết API `/auth/forgot-password` và `/auth/reset-password`
-
-### Phase 3: Quản lý Danh mục & Đối thủ (CRUD cơ bản)
-Mục tiêu: Nắm vững các thao tác CRUD và thiết kế quan hệ Database.
-
-#### 3.1. Module Categories
-- [ ] Tạo module, controller, service cho Categories
-- [ ] Định nghĩa Schema Category
-- [ ] Viết các API CRUD (GET, POST, PUT, DELETE)
-
-#### 3.2. Module Competitors
-- [ ] Tạo module, controller, service cho Competitors
-- [ ] Định nghĩa Schema Competitor (bao gồm config selector CSS: tên, giá, link...)
-- [ ] Viết API CRUD cho đối thủ cạnh tranh
-
-#### 3.3. Module Scraping Configs
-- [ ] Tạo module và Schema `scraping_configs` để map giữa Category và Competitor (link cào)
-- [ ] Viết API quản lý cấu hình cào dữ liệu
-
-### Phase 4: Core Scraping (Tích hợp Playwright & Lập lịch)
-Mục tiêu: Đưa logic automation cũ (Node.js thuần) vào kiến trúc NestJS.
-
-#### 4.1. Scraping Service
-- [ ] Cài đặt `playwright` và `cheerio`
-- [ ] Tạo Scraping module và service
-- [ ] Viết logic khởi chạy Playwright headless, truy cập link, dùng CSS selector trích xuất tên và giá
-- [ ] Lưu kết quả cào vào collection `competitor_products`
-
-#### 4.2. Lập lịch (Cronjob)
-- [ ] Cài đặt `@nestjs/schedule`
-- [ ] Tạo Cronjob tự động gọi Scraping Service hàng ngày lúc nửa đêm
-- [ ] Xử lý luồng chạy tuần tự để không làm quá tải server/bị block IP
-
-### Phase 5: Matching & Tự động Cập nhật Giá (Advanced)
-Mục tiêu: Xử lý logic phức tạp, thao tác tự động cập nhật lên hệ thống khác.
-
-#### 5.1. Thuật toán So khớp (Matching)
-- [ ] Định nghĩa module và service Matching
-- [ ] Chuyển thuật toán chuẩn hóa chuỗi và token matching (>= 60%) từ code cũ sang NestJS
-- [ ] Lưu kết quả so khớp vào bảng `product_matches`
-
-#### 5.2. Luồng duyệt giá
-- [ ] Viết API list danh sách so khớp ra frontend cho Admin xem
-- [ ] Viết API Approve (duyệt) và Reject (từ chối)
-
-#### 5.3. Tự động Auto-Update
-- [ ] Viết service Playwright thao tác trang admin AP24h (đăng nhập bằng session/cookie)
-- [ ] Lắng nghe sự kiện (Event) khi admin Approve: Tự động dùng Playwright nhảy vào sửa giá và nhấn lưu
-- [ ] Xử lý try-catch và retry nếu cấu trúc DOM admin bị thay đổi
+> **Cách làm việc:** Bạn sẽ tự tay code theo hướng Fullstack - xây dựng API ở Backend, ngay sau đó móc API đó lên Frontend qua Server Actions. Quá trình học tập sẽ rất sát với dự án thực tế.
