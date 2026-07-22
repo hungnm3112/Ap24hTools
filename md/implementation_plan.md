@@ -561,22 +561,22 @@ flowchart TD
 
 #### Phase 3.2: Quản lý Đối thủ & Danh sách URL (Competitors CRUD)
 - **Backend:**
-  - [ ] Dùng Nest CLI tạo module `competitors`.
-  - [ ] Định nghĩa Schema Competitor (`name`, `domain`, `selectors`, `scrapingUrls[]`) - nhúng link cào vào schema.
-  - [ ] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Competitors.
+  - [x] Dùng Nest CLI tạo module `competitors`.
+  - [x] Định nghĩa Schema Competitor (`name`, `domain`, `selectors`, `scrapingUrls[]`) - nhúng link cào vào schema.
+  - [x] Cung cấp API CRUD (GET, POST, PATCH, DELETE) cho Competitors.
 - **Frontend:**
-  - [ ] Dựng UI trang Quản lý Đối thủ (`/competitors`) bằng Ant Design Table.
-  - [ ] Xây dựng form tạo Đối thủ (Bước 1): Nhập thông tin cơ bản & Quản lý danh sách URL cần cào (chọn danh mục + URL).
-  - [ ] Viết Server Actions gọi API Competitors và tích hợp lên UI.
+  - [x] Dựng UI trang Quản lý Đối thủ (`/competitors`) bằng Ant Design Table.
+  - [x] Xây dựng form tạo Đối thủ (Bước 1): Nhập thông tin cơ bản & Quản lý danh sách URL cần cào (chọn danh mục + URL).
+  - [x] Viết Server Actions gọi API Competitors và tích hợp lên UI.
 
 #### Phase 3.3: Tích hợp Iframe & Proxy (Playwright Setup)
 - **Backend:**
-  - [ ] Cài đặt `playwright` và `cheerio`.
-  - [ ] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ, chặn redirect, xóa script gây nhiễu, inject script bắt click.
+  - [x] Cài đặt `playwright` và `cheerio`.
+  - [x] Viết API `POST /scraping/proxy` sử dụng Playwright tải web đối thủ, chặn redirect, xóa script gây nhiễu, inject script bắt click.
 - **Frontend:**
-  - [ ] Xây dựng Bước 2 cho form Setup Đối thủ: Hiển thị giao diện Iframe.
-  - [ ] Tích hợp API Proxy để render trang đích trong Iframe.
-  - [ ] Lắng nghe sự kiện click (postMessage) từ Iframe để lấy snippet HTML của phần tử được chọn.
+  - [x] Xây dựng Bước 2 cho form Setup Đối thủ: Hiển thị giao diện Iframe.
+  - [x] Tích hợp API Proxy để render trang đích trong Iframe.
+  - [x] Lắng nghe sự kiện click (postMessage) từ Iframe để lấy snippet HTML của phần tử được chọn.
 
 #### Phase 3.4: Tích hợp AI sinh CSS Selector
 - **Backend:**

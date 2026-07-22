@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompetitorsModule } from './competitors/competitors.module';
+import { ScrapingModule } from './scraping/scraping.module';
 
 @Module({
   imports: [
@@ -51,6 +52,8 @@ import { CompetitorsModule } from './competitors/competitors.module';
     CategoriesModule,
 
     CompetitorsModule,
+
+    ScrapingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

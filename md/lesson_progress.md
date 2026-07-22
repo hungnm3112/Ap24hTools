@@ -25,12 +25,16 @@
 16. **Giao tiếp Frontend - Backend**: Dùng Server Actions để `fetch` API trực tiếp, giấu kín endpoint với người dùng.
 17. **Xử lý Cookie Server-side**: Lưu trữ và quản lý `accessToken` an toàn bằng `next/headers`.
 
-### Fullstack CRUD (Danh mục)
+### Fullstack CRUD (Danh mục & Đối thủ)
 28. **NestJS CRUD Generator**: Dùng `npx nest g module/controller/service` để tạo khung sườn API nhanh chóng.
 29. **MongoDB Hierarchy Design**: Vận dụng kỹ thuật **Parent Reference** (tham chiếu cha) để thiết kế dữ liệu dạng cây đệ quy trong môi trường NoSQL. Biến đổi dữ liệu phẳng (flat) sang dạng cây bằng Map.
 30. **Ant Design Hierarchy Data**: Tích hợp dữ liệu cây lồng nhau (`children`) tự động render bảng phân cấp và Component `TreeSelect` trong UI quản trị.
+31. **Mongoose Relationships**: Thiết lập Nhúng (Embedded Document) phức tạp (`scrapingUrls`).
+32. **Form Động (Dynamic Form)**: Sử dụng Component `Form.List` của Ant Design để tạo bảng nhập liệu mảng con tự động (Thêm/xóa dòng URL).
+33. **Validation Đệ Quy (Nested Validation)**: Dùng `@ValidateNested()` và `@Type()` trong DTO của NestJS để validate các phần tử bên trong mảng nhúng.
 
-## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3.2: CRUD Đối thủ)
-1. **Mongoose Relationships**: Thiết lập quan hệ tham chiếu (Reference) và Nhúng (Embedded) Document phức tạp (scrapingUrls).
-2. **Form Động (Dynamic Form)**: Sử dụng Component `Form.List` của Ant Design để tạo bảng nhập liệu mảng con tự động (Thêm/xóa dòng URL).
-3. **Thiết kế UI Tab/Wizard**: Phân tách logic form phức tạp thành nhiều luồng (Bước 1, Bước 2).
+## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3.3: Playwright Proxy & Iframe)
+1. **Thiết kế UI Wizard (Nâng cao)**: Phân tách Modal form hiện tại thành nhiều bước (Step 1, Step 2) giúp giảm tải nhận thức cho người dùng.
+2. **Reverse Proxy bằng Playwright**: Tải trang web đối thủ ở Backend, loại bỏ các mã độc/quảng cáo/redirect script để đưa vào Admin an toàn.
+3. **Iframe Communication**: Dùng `postMessage` giao tiếp hai chiều giữa Frontend React và nội dung HTML giả lập bên trong Iframe.
+4. **DOM Traversal & Event Delegation**: Viết script JavaScript thuần inject vào trang web đối thủ để chặn mọi cú click chuột, trích xuất HTML của phần tử được click.
