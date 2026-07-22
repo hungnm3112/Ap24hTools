@@ -8,5 +8,6 @@ import { Competitor, CompetitorSchema } from './schemas/competitor.schema';
   imports: [MongooseModule.forFeature([{ name: Competitor.name, schema: CompetitorSchema }])],
   controllers: [CompetitorsController],
   providers: [CompetitorsService],
+  exports: [CompetitorsService, MongooseModule],
 })
 export class CompetitorsModule {}

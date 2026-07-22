@@ -10,9 +10,13 @@ import { MailModule } from './mail/mail.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompetitorsModule } from './competitors/competitors.module';
 import { ScrapingModule } from './scraping/scraping.module';
+import { MasterProductsModule } from './master-products/master-products.module';
+import { ScrapedProductsModule } from './scraped-products/scraped-products.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     /* 
      * 1. Cấu hình ConfigModule
      * Mục đích: Load các biến môi trường từ file .env vào process.env và cung cấp ConfigService
@@ -54,6 +58,8 @@ import { ScrapingModule } from './scraping/scraping.module';
     CompetitorsModule,
 
     ScrapingModule,
+    MasterProductsModule,
+    ScrapedProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

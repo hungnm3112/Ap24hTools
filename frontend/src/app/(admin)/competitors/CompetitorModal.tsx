@@ -280,6 +280,10 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
             </Form.Item>
           </Card>
 
+          <Form.Item name="customCookies" label="Giả lập Cookie (Ví dụ: province_id=3 để cấu hình lấy hàng tại Hà Nội)" tooltip="Hữu ích khi bạn muốn Bot cào dữ liệu dựa trên một khu vực hoặc phiên cụ thể. Cấu trúc giống HTTP Cookie (vd: province_id=3; cookie_2=abc). Để trống nếu muốn cào mặc định toàn quốc.">
+            <Input.TextArea rows={2} placeholder="Nhập chuỗi Cookie ở đây (Nếu có)..." />
+          </Form.Item>
+
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang hoạt động" unCheckedChildren="Tạm dừng" />
           </Form.Item>
@@ -353,7 +357,7 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
               {activeUrl && (
                 <iframe 
                   ref={iframeRef}
-                  src={`${process.env.NEXT_PUBLIC_API_URL}/scraping/proxy?url=${encodeURIComponent(activeUrl)}`}
+                  src={`${process.env.NEXT_PUBLIC_API_URL}/scraping/proxy?url=${encodeURIComponent(activeUrl)}${formData?.customCookies ? `&customCookies=${encodeURIComponent(formData.customCookies)}` : ''}`}
                   className={`w-full h-full border-none transition-all ${isDeleteMode ? 'cursor-crosshair opacity-80 ring-4 ring-red-500' : ''}`}
                   onLoad={() => setIframeLoading(false)}
                 />

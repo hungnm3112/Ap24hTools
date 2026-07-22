@@ -580,13 +580,13 @@ flowchart TD
 
 #### Phase 3.4: Tích hợp AI sinh CSS Selector
 - **Backend:**
-  - [ ] Cài đặt thư viện AI (`@google/generative-ai` hoặc `openai`).
-  - [ ] Viết API `POST /scraping/ai-selector` nhận HTML snippet, gọi AI phân tích và trả về CSS Selector tối ưu.
+  - [x] Cài đặt thư viện AI (`@google/generative-ai` hoặc `openai`).
+  - [x] Viết API `POST /scraping/ai-selector` nhận HTML snippet, gọi AI phân tích và trả về CSS Selector tối ưu.
 - **Frontend:**
-  - [ ] Xây dựng Bước 3: Đẩy HTML snippet lên Backend, nhận gợi ý Selector từ AI.
-  - [ ] Hiển thị Selector, cho phép Admin xác nhận/chỉnh sửa.
-  - [ ] Test thử selector ngay trên Iframe (Highlight các phần tử match).
-  - [ ] Gắn Action lưu hoàn chỉnh toàn bộ Cấu hình (Thông tin + URLs + Selectors) vào Database.
+  - [x] Xây dựng Bước 3: Đẩy HTML snippet lên Backend, nhận gợi ý Selector từ AI.
+  - [x] Hiển thị Selector, cho phép Admin xác nhận/chỉnh sửa.
+  - [x] Test thử selector ngay trên Iframe (Highlight các phần tử match).
+  - [x] Gắn Action lưu hoàn chỉnh toàn bộ Cấu hình (Thông tin + URLs + Selectors) vào Database.
 
 ### Phase 4: Thuật toán So khớp & Cập nhật Giá (Matching & Auto-Update)
 - **Backend:**

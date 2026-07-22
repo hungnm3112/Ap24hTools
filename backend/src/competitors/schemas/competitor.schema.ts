@@ -59,6 +59,9 @@ export class Competitor {
   @Prop({ type: SelectorsSchema, default: {} })
   selectors: Selectors; // Cấu hình CSS Selector
 
+  @Prop()
+  customCookies?: string; // Chuỗi Cookie giả lập (VD: vị trí địa lý, session)
+
   @Prop({ default: true })
   isActive: boolean;
 }

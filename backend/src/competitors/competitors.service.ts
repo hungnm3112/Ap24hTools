@@ -33,6 +33,14 @@ export class CompetitorsService {
       .exec();
   }
 
+  async findActive(): Promise<CompetitorDocument[]> {
+    return this.competitorModel
+      .find({ isActive: true })
+      .populate('scrapingUrls.categoryId', 'name')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
   async findOne(id: string): Promise<CompetitorDocument> {
     const competitor = await this.competitorModel
       .findById(id)

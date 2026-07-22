@@ -33,13 +33,20 @@
 32. **Form Động (Dynamic Form)**: Sử dụng Component `Form.List` của Ant Design để tạo bảng nhập liệu mảng con tự động (Thêm/xóa dòng URL).
 33. **Validation Đệ Quy (Nested Validation)**: Dùng `@ValidateNested()` và `@Type()` trong DTO của NestJS để validate các phần tử bên trong mảng nhúng.
 
-## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3.3: Playwright Proxy & Iframe) - [CHƯA HỌC]
-1. **Thiết kế UI Wizard (Nâng cao)**: Phân tách Modal form hiện tại thành nhiều bước (Step 1, Step 2) giúp giảm tải nhận thức cho người dùng.
-2. **Reverse Proxy bằng Playwright**: Tải trang web đối thủ ở Backend, loại bỏ các mã độc/quảng cáo/redirect script để đưa vào Admin an toàn.
-3. **Iframe Communication**: Dùng `postMessage` giao tiếp hai chiều giữa Frontend React và nội dung HTML giả lập bên trong Iframe.
-4. **DOM Traversal & Event Delegation**: Viết script JavaScript thuần inject vào trang web đối thủ để chặn mọi cú click chuột, trích xuất HTML của phần tử được click.
+### Tích hợp Iframe, Proxy & Playwright (Phase 3.3)
+34. **Thiết kế UI Wizard (Nâng cao)**: Phân tách Modal form hiện tại thành nhiều bước (Step 1, Step 2, Step 3) giúp giảm tải nhận thức cho người dùng.
+35. **Reverse Proxy bằng Playwright**: Tải trang web đối thủ ở Backend, loại bỏ các mã độc/quảng cáo/redirect script để đưa vào Admin an toàn.
+36. **Iframe Communication**: Dùng `postMessage` giao tiếp hai chiều giữa Frontend React và nội dung HTML giả lập bên trong Iframe.
+37. **DOM Traversal & Event Delegation**: Viết script JavaScript thuần inject vào trang web đối thủ để chặn mọi cú click chuột, trích xuất HTML của phần tử được click, kết hợp tính năng "Delete Mode" xóa rác DOM.
 
-## 🤖 Các Kỹ Năng Sắp Học Tới (Phase 3.4: Tích hợp AI)
-1. **Google Gemini AI API**: Tích hợp `@google/generative-ai` vào backend NestJS để giao tiếp với mô hình AI.
-2. **Prompt Engineering cho AI**: Kỹ thuật viết Prompt hiệu quả ép AI trả về dữ liệu chuẩn JSON, dùng trong tác vụ bóc tách CSS Selector từ mã HTML thô.
-3. **Luồng xử lý Bất đồng bộ Đa luồng (Promise.all)**: Gọi nhiều API AI cùng lúc ở Frontend để phân tích song song nhiều trường dữ liệu, tối ưu thời gian chờ.
+### Trí Tuệ Nhân Tạo (AI) Sinh Selector (Phase 3.4)
+38. **Google Gemini AI API**: Tích hợp `@google/generative-ai` vào backend NestJS để giao tiếp với mô hình AI và dùng biến môi trường để tùy biến cấu hình.
+39. **Prompt Engineering cho AI**: Kỹ thuật viết Prompt hiệu quả ép AI đóng vai chuyên gia Web Scraping và trả về dữ liệu chuẩn JSON cho Selector.
+40. **Xử lý Đa luồng (Parallel Bất đồng bộ)**: Trải nghiệm thực tế việc Frontend gửi loạt API AI đồng thời để tối ưu thời gian chờ của người dùng.
+
+## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 4: Thuật toán So khớp & Cập nhật Giá tự động) - [CHƯA HỌC]
+1. **Thuật toán Chuẩn hóa Text & So khớp (Token Matching)**: Cách viết thuật toán (Algorithm) tính toán độ tương đồng (similarity) giữa 2 chuỗi tên sản phẩm.
+2. **Cronjob & Tự động hóa (Task Scheduling)**: Dùng `@nestjs/schedule` để hẹn giờ cào dữ liệu lặp lại theo khung giờ cố định.
+3. **Mongoose Batch Insert & Upsert**: Xử lý dữ liệu lớn bằng cách Update-hoặc-Insert để tránh trùng lặp thay vì save() từng phần tử.
+4. **Playwright Tương tác website (Auto-Action)**: Không chỉ là Proxy để xem, bạn sẽ dùng Playwright để đăng nhập vào trang chủ AP24h, tìm kiếm ô nhập giá, và submit form tự động!
+5. **Thiết kế Bảng so sánh (Comparison UI)**: Tạo giao diện Dashboard báo cáo chênh lệch phần trăm (%).

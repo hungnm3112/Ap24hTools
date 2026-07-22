@@ -61,6 +61,10 @@ export class CreateCompetitorDto {
   selectors?: SelectorsDto;
 
   @IsOptional()
+  @IsString()
+  customCookies?: string;
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }

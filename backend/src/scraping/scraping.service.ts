@@ -1,10 +1,19 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { chromium } from 'playwright';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { CompetitorsService } from '../competitors/competitors.service';
+import { ScrapedProductsService } from '../scraped-products/scraped-products.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ScrapingService {
-  async getProxyHtml(url: string): Promise<string> {
+  private readonly logger = new Logger(ScrapingService.name);
+
+  constructor(
+    private readonly competitorsService: CompetitorsService,
+    private readonly scrapedProductsService: ScrapedProductsService,
+  ) {}
+  async getProxyHtml(url: string, customCookies?: string): Promise<string> {
     if (!url) {
       throw new BadRequestException('Bắt buộc phải cung cấp URL để cào dữ liệu');
     }
@@ -13,6 +22,10 @@ export class ScrapingService {
     try {
       const page = await browser.newPage();
       
+      if (customCookies) {
+        await page.setExtraHTTPHeaders({ 'Cookie': customCookies });
+      }
+
       // Chặn tải các tài nguyên không cần thiết để tăng tốc độ load trang (Ảnh, Font)
       await page.route('**/*', (route) => {
         const type = route.request().resourceType();
@@ -191,5 +204,186 @@ export class ScrapingService {
       console.error('Lỗi gọi Gemini AI:', error);
       throw new BadRequestException('Lỗi khi phân tích AI: ' + error.message);
     }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    this.logger.log('Bắt đầu tiến trình cào dữ liệu tự động định kỳ...');
+    await this.runAutoScraping();
+  }
+
+  async runAutoScraping(targetCompetitorId?: string) {
+    let competitors: any[] = [];
+    if (targetCompetitorId) {
+      const comp = await this.competitorsService.findOne(targetCompetitorId);
+      if (comp) competitors.push(comp);
+    } else {
+      competitors = await this.competitorsService.findActive();
+    }
+
+    if (competitors.length === 0) {
+      this.logger.warn('Không có đối thủ nào đang active để cào.');
+      return { status: 'No active competitors' };
+    }
+
+    const browser = await chromium.launch({ headless: true });
+    
+    for (const competitor of competitors) {
+      this.logger.log(`Đang cào dữ liệu cho đối thủ: ${competitor.name}`);
+      const selectors = competitor.selectors || {};
+      const productItemSelector = selectors.productItem;
+      const nextPageSelector = selectors.nextPageButton;
+
+      if (!productItemSelector) {
+        this.logger.warn(`Đối thủ ${competitor.name} chưa cấu hình selector productItem, bỏ qua.`);
+        continue;
+      }
+
+      for (const urlObj of competitor.scrapingUrls) {
+        const url = urlObj.url;
+        this.logger.log(`- Đang xử lý URL: ${url}`);
+        
+        try {
+          const page = await browser.newPage();
+          // Chặn tài nguyên tĩnh
+          await page.route('**/*', (route) => {
+            const type = route.request().resourceType();
+            if (['image', 'media', 'font'].includes(type)) {
+              route.continue();
+            } else {
+              route.continue();
+            }
+          });
+
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+          
+          let hasNextPage = true;
+          let totalExtracted = 0;
+          const seenUrls = new Set<string>();
+
+          while (hasNextPage) {
+            const plainSelectors = JSON.parse(JSON.stringify(selectors));
+            // Lấy danh sách sản phẩm hiện tại trên trang
+            const products = await page.evaluate((sel) => {
+              const items = document.querySelectorAll(sel.productItem);
+              const result: { name: string; price: number; image: string; productUrl: string; }[] = [];
+              items.forEach(item => {
+                let name = '', price = 0, image = '', productUrl = '';
+                
+                if (sel.productName) {
+                  const el = item.querySelector(sel.productName);
+                  if (el) name = el.textContent?.trim() || '';
+                }
+                if (sel.productPrice) {
+                  const el = item.querySelector(sel.productPrice);
+                  if (el) {
+                    const priceText = el.textContent?.replace(/[^0-9]/g, '');
+                    if (priceText) price = parseInt(priceText, 10);
+                  }
+                }
+                if (sel.productImage) {
+                  const el = item.querySelector(sel.productImage);
+                  if (el) {
+                    if (el.tagName === 'IMG') image = el.getAttribute('src') || '';
+                    else image = el.getAttribute('data-src') || el.style.backgroundImage || '';
+                  }
+                }
+                
+                // Cố gắng tìm thẻ a để lấy URL sản phẩm (nếu user cấu hình thẻ a thì lấy href)
+                const aEl = item.tagName === 'A' ? item : item.querySelector('a');
+                if (aEl) productUrl = aEl.getAttribute('href') || '';
+                // Chuẩn hóa URL nếu bị thiếu gốc
+                if (productUrl && productUrl.startsWith('/')) {
+                  const urlObj = new URL(location.href);
+                  productUrl = urlObj.origin + productUrl;
+                }
+
+                if (name && productUrl) {
+                  result.push({ name, price, image, productUrl });
+                }
+              });
+              return result;
+            }, plainSelectors);
+
+            // Lưu sản phẩm vào Database (Upsert)
+            for (const p of products) {
+              if (!seenUrls.has(p.productUrl)) {
+                seenUrls.add(p.productUrl);
+                await this.scrapedProductsService.upsertProduct({
+                  siteId: competitor._id,
+                  productUrl: p.productUrl,
+                  productName: p.name,
+                  productPrice: p.price,
+                  productImage: p.image
+                });
+                totalExtracted++;
+              }
+            }
+
+            // Xử lý Phân trang (Hybrid)
+            if (nextPageSelector) {
+              const currentProductCount = await page.locator(productItemSelector).count();
+              const nextBtn = page.locator(nextPageSelector).first();
+              
+              if (await nextBtn.isVisible()) {
+                this.logger.log(`Clicking next page... (đang có ${currentProductCount} SP)`);
+                await nextBtn.click({ force: true });
+                
+                // Chờ cho đến khi số lượng SP tăng lên (Ajax Load More) hoặc URL thay đổi (Next Page)
+                try {
+                  const currentUrl = page.url();
+                  let waitCount = 0;
+                  let added = false;
+                  while (waitCount < 20) { // Đợi tối đa 10s (20 * 500ms)
+                    await page.waitForTimeout(500);
+                    // Nếu URL thay đổi -> đã sang trang mới
+                    if (page.url() !== currentUrl) {
+                      added = true;
+                      await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
+                      break;
+                    }
+                    // Nếu số lượng sản phẩm tăng lên -> đã Load More thành công
+                    const newCount = await page.locator(productItemSelector).count();
+                    if (newCount > currentProductCount) {
+                      added = true;
+                      break;
+                    }
+                    waitCount++;
+                  }
+                  
+                  if (!added) {
+                    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+                  }
+                } catch (e) {
+                  this.logger.warn('Lỗi khi chờ phân trang: ' + e.message);
+                }
+
+                // Kiểm tra xem số lượng phần tử có tăng lên hoặc url có thay đổi không
+                const newProductCount = await page.locator(productItemSelector).count();
+                if (newProductCount <= currentProductCount) {
+                  // Giả định nếu số lượng không đổi và URL không đổi -> Đã hết trang
+                  this.logger.log('Đã tới trang cuối cùng.');
+                  hasNextPage = false;
+                }
+              } else {
+                hasNextPage = false;
+              }
+            } else {
+              hasNextPage = false;
+            }
+          }
+          
+          this.logger.log(`=> Đã trích xuất tổng cộng ${totalExtracted} sản phẩm từ ${url}`);
+          await page.close();
+
+        } catch (err) {
+          this.logger.error(`Lỗi khi cào URL ${url}:`, err);
+        }
+      }
+    }
+
+    await browser.close();
+    this.logger.log('Hoàn thành quá trình cào dữ liệu.');
+    return { status: 'success' };
   }
 }
