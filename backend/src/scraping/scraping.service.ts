@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { chromium } from 'playwright';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class ScrapingService {
@@ -133,6 +134,62 @@ export class ScrapingService {
       throw new BadRequestException('Không thể tải trang web đối thủ: ' + error.message);
     } finally {
       await browser.close();
+    }
+  }
+
+  /*
+   * Tích hợp AI (Google Gemini) để phân tích HTML và sinh CSS Selector
+   */
+  async generateAiSelector(htmlSnippet: string, fieldName: string): Promise<{ selector: string }> {
+    if (!htmlSnippet) {
+      throw new BadRequestException('Không có mã HTML để phân tích');
+    }
+
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new BadRequestException('Chưa cấu hình GEMINI_API_KEY trong file .env');
+      }
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      // Sử dụng model được cấu hình trong .env (mặc định là gemini-1.5-flash)
+      const aiModelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+      const model = genAI.getGenerativeModel({ model: aiModelName });
+
+      const prompt = `
+        Bạn là một chuyên gia lập trình Web Scraping (bóc tách dữ liệu web).
+        Dưới đây là một đoạn mã HTML tĩnh mà tôi vừa lấy được từ một trang web thương mại điện tử.
+        Tôi muốn bóc tách dữ liệu cho trường (field): "${fieldName}".
+
+        Nhiệm vụ của bạn là:
+        1. Phân tích cấu trúc HTML này.
+        2. Đề xuất một đoạn CSS Selector NGẮN GỌN, CHÍNH XÁC NHẤT và CÓ TÍNH ỔN ĐỊNH CAO để có thể chọn được phần tử tương ứng với trường "${fieldName}" (Ví dụ: ".product-price", ".title h3", "img.thumbnail").
+        3. Tuyệt đối không dùng những class có dạng mã băm ngẫu nhiên sinh ra bởi React/Vue (ví dụ: class="name_xyz123"). Hãy ưu tiên các class có ý nghĩa hoặc cấu trúc cây (VD: div.info > h1).
+
+        Yêu cầu Output: 
+        Chỉ trả về DUY NHẤT một chuỗi JSON chuẩn theo định dạng sau, không giải thích gì thêm, không bọc trong thẻ markdown (không dùng \`\`\`json):
+        {"selector": "css_selector_cua_ban"}
+
+        Đây là mã HTML:
+        ${htmlSnippet.substring(0, 5000)} // Cắt bớt nếu quá dài để tránh vượt giới hạn token
+      `;
+
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      
+      try {
+        // Cố gắng parse JSON trực tiếp
+        // Đôi khi AI vẫn cố chấp trả về ```json ... ```, ta cần tiền xử lý
+        const cleanedText = responseText.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+        const json = JSON.parse(cleanedText);
+        return { selector: json.selector };
+      } catch (parseError) {
+        console.error('Lỗi Parse JSON từ AI:', responseText);
+        throw new BadRequestException('AI trả về kết quả không đúng định dạng JSON.');
+      }
+    } catch (error) {
+      console.error('Lỗi gọi Gemini AI:', error);
+      throw new BadRequestException('Lỗi khi phân tích AI: ' + error.message);
     }
   }
 }

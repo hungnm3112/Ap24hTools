@@ -29,6 +29,7 @@ export interface ICompetitor {
   name: string;
   domain: string;
   scrapingUrls: IScrapingUrl[];
+  selectors?: Record<string, string>;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

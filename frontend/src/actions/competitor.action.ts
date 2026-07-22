@@ -77,3 +77,23 @@ export async function deleteCompetitorAction(id: string) {
     return { success: false, message: 'Lỗi kết nối server' };
   }
 }
+
+export async function generateAiSelectorAction(htmlSnippet: string, fieldName: string) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scraping/ai-selector`, {
+      method: 'POST',
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({ htmlSnippet, fieldName }),
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      return { success: false, message: data.message || 'Lỗi từ AI' };
+    }
+    
+    const data = await res.json();
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: 'Lỗi kết nối AI server' };
+  }
+}

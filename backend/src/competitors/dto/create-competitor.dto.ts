@@ -18,6 +18,28 @@ export class ScrapingUrlDto {
   url: string;
 }
 
+export class SelectorsDto {
+  @IsOptional()
+  @IsString()
+  productItem?: string;
+
+  @IsOptional()
+  @IsString()
+  productName?: string;
+
+  @IsOptional()
+  @IsString()
+  productPrice?: string;
+
+  @IsOptional()
+  @IsString()
+  productImage?: string;
+
+  @IsOptional()
+  @IsString()
+  nextPageButton?: string;
+}
+
 export class CreateCompetitorDto {
   @IsString({ message: 'Tên đối thủ phải là chuỗi' })
   @IsNotEmpty({ message: 'Tên đối thủ không được để trống' })
@@ -34,6 +56,12 @@ export class CreateCompetitorDto {
   scrapingUrls?: ScrapingUrlDto[];
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => SelectorsDto)
+  selectors?: SelectorsDto;
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
+

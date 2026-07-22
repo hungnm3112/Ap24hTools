@@ -33,8 +33,13 @@
 32. **Form Động (Dynamic Form)**: Sử dụng Component `Form.List` của Ant Design để tạo bảng nhập liệu mảng con tự động (Thêm/xóa dòng URL).
 33. **Validation Đệ Quy (Nested Validation)**: Dùng `@ValidateNested()` và `@Type()` trong DTO của NestJS để validate các phần tử bên trong mảng nhúng.
 
-## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3.3: Playwright Proxy & Iframe)
+## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 3.3: Playwright Proxy & Iframe) - [CHƯA HỌC]
 1. **Thiết kế UI Wizard (Nâng cao)**: Phân tách Modal form hiện tại thành nhiều bước (Step 1, Step 2) giúp giảm tải nhận thức cho người dùng.
 2. **Reverse Proxy bằng Playwright**: Tải trang web đối thủ ở Backend, loại bỏ các mã độc/quảng cáo/redirect script để đưa vào Admin an toàn.
 3. **Iframe Communication**: Dùng `postMessage` giao tiếp hai chiều giữa Frontend React và nội dung HTML giả lập bên trong Iframe.
 4. **DOM Traversal & Event Delegation**: Viết script JavaScript thuần inject vào trang web đối thủ để chặn mọi cú click chuột, trích xuất HTML của phần tử được click.
+
+## 🤖 Các Kỹ Năng Sắp Học Tới (Phase 3.4: Tích hợp AI)
+1. **Google Gemini AI API**: Tích hợp `@google/generative-ai` vào backend NestJS để giao tiếp với mô hình AI.
+2. **Prompt Engineering cho AI**: Kỹ thuật viết Prompt hiệu quả ép AI trả về dữ liệu chuẩn JSON, dùng trong tác vụ bóc tách CSS Selector từ mã HTML thô.
+3. **Luồng xử lý Bất đồng bộ Đa luồng (Promise.all)**: Gọi nhiều API AI cùng lúc ở Frontend để phân tích song song nhiều trường dữ liệu, tối ưu thời gian chờ.
