@@ -2,13 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Switch, Button, App, TreeSelect } from 'antd';
 import { createCategoryAction, updateCategoryAction, getCategoriesAction } from '@/actions/category.action';
+import { ICategory } from '@/types';
 
 interface CategoryModalProps {
   open: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  // Nếu editData có giá trị (khác null), form sẽ đóng vai trò là "Sửa", nếu null là "Thêm mới"
-  editData: any | null; 
+  editData: ICategory | null; 
 }
 
 /*
@@ -20,7 +20,7 @@ export default function CategoryModal({ open, onCancel, onSuccess, editData }: C
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
-  const [categoriesTree, setCategoriesTree] = useState<any[]>([]);
+  const [categoriesTree, setCategoriesTree] = useState<ICategory[]>([]);
 
   // Lắng nghe sự kiện: Mỗi khi modal mở lên, ta sẽ gọi API lấy danh sách danh mục (để đưa vào select box)
   useEffect(() => {
@@ -43,13 +43,11 @@ export default function CategoryModal({ open, onCancel, onSuccess, editData }: C
   const fetchTreeData = async () => {
     const res = await getCategoriesAction();
     if (res.success) {
-      // Để TreeSelect hiển thị đúng, ta cần map đổi 'name' thành 'title', '_id' thành 'value'
-      const formatTree = (nodes: any[]): any[] => {
+      const formatTree = (nodes: ICategory[]): any[] => {
         return nodes.map(node => ({
           title: node.name,
           value: node._id,
           children: node.children ? formatTree(node.children) : undefined,
-          // Không cho phép chọn chính nó làm cha (khi edit)
           disabled: editData && editData._id === node._id
         }));
       };

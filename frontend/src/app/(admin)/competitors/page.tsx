@@ -5,14 +5,15 @@ import { Table, Button, Space, App, Tag, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, GlobalOutlined } from '@ant-design/icons';
 import { getCompetitorsAction, deleteCompetitorAction } from '@/actions/competitor.action';
 import CompetitorModal from './CompetitorModal';
+import { ICompetitor } from '@/types';
 
 export default function CompetitorsPage() {
   const { message } = App.useApp();
-  const [competitors, setCompetitors] = useState([]);
+  const [competitors, setCompetitors] = useState<ICompetitor[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editData, setEditData] = useState<any>(null);
+  const [editData, setEditData] = useState<ICompetitor | null>(null);
 
   const fetchCompetitors = async () => {
     setLoading(true);
@@ -44,7 +45,7 @@ export default function CompetitorsPage() {
       title: 'Tên đối thủ',
       dataIndex: 'name',
       key: 'name',
-      render: (text: string, record: any) => (
+      render: (text: string, record: ICompetitor) => (
         <span className="font-semibold text-blue-600">{text}</span>
       )
     },
@@ -63,7 +64,7 @@ export default function CompetitorsPage() {
       title: 'Số lượng URL',
       key: 'urlsCount',
       // Hiển thị đếm số lượng Link đang cấu hình để cào dữ liệu
-      render: (_: any, record: any) => (
+      render: (_: any, record: ICompetitor) => (
         <Tag color="purple">{record.scrapingUrls?.length || 0} URLs</Tag>
       )
     },
@@ -80,7 +81,7 @@ export default function CompetitorsPage() {
     {
       title: 'Hành động',
       key: 'action',
-      render: (_: any, record: any) => (
+      render: (_: any, record: ICompetitor) => (
         <Space size="middle">
           <Button 
             type="primary" 

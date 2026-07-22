@@ -4,19 +4,20 @@ import { Modal, Form, Input, Switch, Button, App, TreeSelect, Space, Card } from
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { createCompetitorAction, updateCompetitorAction } from '@/actions/competitor.action';
 import { getCategoriesAction } from '@/actions/category.action';
+import { ICategory, ICompetitor, IScrapingUrl } from '@/types';
 
 interface CompetitorModalProps {
   open: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  editData: any | null;
+  editData: ICompetitor | null;
 }
 
 export default function CompetitorModal({ open, onCancel, onSuccess, editData }: CompetitorModalProps) {
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
-  const [categoriesTree, setCategoriesTree] = useState<any[]>([]);
+  const [categoriesTree, setCategoriesTree] = useState<ICategory[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -24,10 +25,14 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
       if (editData) {
         // Dữ liệu từ Backend (populate) trả về `categoryId` là object { _id, name }
         // Ta cần map lại thành string (_id) để hiển thị đúng giá trị trong TreeSelect
-        const formatUrls = editData.scrapingUrls?.map((item: any) => ({
-          categoryId: item.categoryId?._id || item.categoryId,
-          url: item.url
-        })) || [];
+        const formatUrls = editData.scrapingUrls?.map((item: IScrapingUrl) => {
+          // Ép kiểu (type assertion) để báo với TS rằng categoryId có thể đang là object
+          const cat = item.categoryId as any; 
+          return {
+            categoryId: cat._id || cat,
+            url: item.url
+          };
+        }) || [];
 
         form.setFieldsValue({
           name: editData.name,
@@ -45,7 +50,7 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
   const fetchCategories = async () => {
     const res = await getCategoriesAction();
     if (res.success) {
-      const formatTree = (nodes: any[]): any[] => {
+      const formatTree = (nodes: ICategory[]): any[] => {
         return nodes.map(node => ({
           title: node.name,
           value: node._id,

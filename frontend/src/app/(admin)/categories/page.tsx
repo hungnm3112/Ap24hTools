@@ -5,6 +5,7 @@ import { Table, Button, Space, App, Tag, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getCategoriesAction, deleteCategoryAction } from '@/actions/category.action';
 import CategoryModal from './CategoryModal';
+import { ICategory } from '@/types';
 
 /*
  * LÝ DO SỬ DỤNG CLIENT COMPONENT Ở ĐÂY (WHY?):
@@ -14,12 +15,12 @@ import CategoryModal from './CategoryModal';
  */
 export default function CategoriesPage() {
   const { message } = App.useApp();
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [loading, setLoading] = useState(true);
   
   // State cho Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editData, setEditData] = useState<any>(null); // null = mode Create, có data = mode Edit
+  const [editData, setEditData] = useState<ICategory | null>(null);
 
   // 1. Hàm fetch data từ Backend
   const fetchCategories = async () => {
@@ -76,7 +77,7 @@ export default function CategoriesPage() {
     {
       title: 'Hành động',
       key: 'action',
-      render: (_: any, record: any) => (
+      render: (_: any, record: ICategory) => (
         <Space size="middle">
           <Button 
             type="primary" 
