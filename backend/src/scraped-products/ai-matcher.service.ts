@@ -60,6 +60,7 @@ export class AiMatcherService {
           // Tự tạo luôn nếu không có ứng viên
           const newCatalog = await this.catalogProductsService.findOrCreateCatalogProduct(p.productName, normalizedName);
           p.catalogProductId = newCatalog._id;
+          p.catalogProductName = newCatalog.name;
           p.isAiMatched = true;
           p.matchScore = 100;
           p.aiConfidence = 'HIGH';
@@ -114,11 +115,18 @@ export class AiMatcherService {
             const batchItem = batchData.find(b => b.scrapedId === scrapedId);
             const newCatalog = await this.catalogProductsService.findOrCreateCatalogProduct(product.productName, batchItem.normalized);
             product.catalogProductId = newCatalog._id;
+            product.catalogProductName = newCatalog.name;
             product.isAiMatched = true;
             product.matchScore = 100;
             product.aiConfidence = 'HIGH';
           } else {
+            const batchItem = batchData.find(b => b.scrapedId === scrapedId);
+            const candidate = batchItem?.candidates.find((c: any) => c.id === matchedCandidateId);
+            
             product.catalogProductId = matchedCandidateId;
+            if (candidate) {
+              product.catalogProductName = candidate.name;
+            }
             product.isAiMatched = true;
             product.matchScore = 90;
             product.aiConfidence = 'MEDIUM';

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Space, App, Tag, Popconfirm, Popover, List } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, GlobalOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import { getCompetitorsAction, deleteCompetitorAction } from '@/actions/competitor.action';
-import { runManualScrapingAction } from '@/actions/scraping.action';
+import { runManualScrapingAction, deleteAllScrapedProductsAction } from '@/actions/scraping.action';
 import CompetitorModal from './CompetitorModal';
 import { ICompetitor } from '@/types';
 import { useRouter } from 'next/navigation';
@@ -156,17 +156,38 @@ export default function CompetitorsPage() {
           <h1 className="text-2xl font-bold">Quản lý Domain</h1>
           <p className="text-gray-500 text-sm mt-1">Cấu hình các website cần theo dõi giá</p>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setEditData(null);
-            setIsModalOpen(true);
-          }}
-          size="large"
-        >
-          Thêm Domain mới
-        </Button>
+        <Space>
+          <Popconfirm
+            title="Xóa toàn bộ dữ liệu cào?"
+            description="Bạn có chắc chắn muốn xóa TẤT CẢ sản phẩm đã cào từ trước đến nay không?"
+            onConfirm={async () => {
+              const res = await deleteAllScrapedProductsAction();
+              if (res.success) {
+                message.success(res.message);
+              } else {
+                message.error(res.message);
+              }
+            }}
+            okText="Xóa hết"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger icon={<DeleteOutlined />} size="large">
+              Xóa Data Cào
+            </Button>
+          </Popconfirm>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditData(null);
+              setIsModalOpen(true);
+            }}
+            size="large"
+          >
+            Thêm Domain mới
+          </Button>
+        </Space>
       </div>
 
       <Table

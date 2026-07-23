@@ -30,6 +30,7 @@ export class ScrapedProductsService {
     const existing = await this.scrapedProductModel.findOne({ productUrl: productData.productUrl });
 
     let catalogProductId = existing?.catalogProductId || null;
+    let catalogProductName = existing?.catalogProductName || null;
     let isAiMatched = existing?.isAiMatched || false;
     let matchScore = existing?.matchScore || 0;
     let aiConfidence = existing?.aiConfidence || 'LOW';
@@ -40,6 +41,7 @@ export class ScrapedProductsService {
     const payload = {
       ...productData,
       catalogProductId: catalogProductId, // Giữ lại ID cũ nếu đã từng match thành công
+      catalogProductName: catalogProductName, // Giữ lại tên cũ
       isAiMatched: isAiMatched,
       matchScore: matchScore,
       aiConfidence: aiConfidence
@@ -61,40 +63,19 @@ export class ScrapedProductsService {
     return this.scrapedProductModel.aggregate([
       // 1. Chỉ lấy những ScrapedProduct đã được map với Catalog
       { $match: { catalogProductId: { $ne: null } } },
-      
-      // 2. Lookup để lấy tên Web Đối thủ (Competitor)
-      {
-        $lookup: {
-          from: 'competitors', 
-          localField: 'siteId',
-          foreignField: '_id',
-          as: 'site'
-        }
-      },
-      { $unwind: { path: '$site', preserveNullAndEmptyArrays: true } },
 
-      // 3. Lookup để lấy thông tin Sản phẩm chuẩn (Catalog Product)
-      {
-        $lookup: {
-          from: 'catalogproducts', // Mongoose mặc định thêm 's' thành catalogproducts
-          localField: 'catalogProductId',
-          foreignField: '_id',
-          as: 'catalog'
-        }
-      },
-      { $unwind: { path: '$catalog', preserveNullAndEmptyArrays: true } },
-
-      // 4. Gom nhóm (Group) theo Catalog Product
+      // 2. Gom nhóm (Group) theo Catalog Product
       {
         $group: {
           _id: '$catalogProductId',
-          catalogProductName: { $first: '$catalog.name' },
+          catalogProductName: { $first: '$catalogProductName' },
           prices: {
             $push: {
-              siteId: '$site._id',
-              siteName: '$site.name',
+              siteId: '$siteId',
+              siteName: '$siteName', // Lấy trực tiếp từ schema (Denormalized)
               price: '$productPrice',
               url: '$productUrl',
+              image: '$productImage',
               isAiMatched: '$isAiMatched',
               matchScore: '$matchScore',
               aiConfidence: '$aiConfidence'
@@ -103,16 +84,19 @@ export class ScrapedProductsService {
         }
       },
 
-      // 5. Thêm các trường tính toán (Thấp nhất, Cao nhất)
+      // 3. Thêm các trường tính toán (Số lượng site có bán)
       {
         $addFields: {
-          lowestPrice: { $min: '$prices.price' },
-          highestPrice: { $max: '$prices.price' }
+          siteCount: { $size: '$prices' }
         }
       },
 
-      // 6. Sắp xếp danh sách (tuỳ chọn) theo tên sản phẩm A-Z
-      { $sort: { catalogProductName: 1 } }
+      // 4. Sắp xếp danh sách ưu tiên những SP có mặt trên nhiều web nhất, sau đó theo tên A-Z
+      { $sort: { siteCount: -1, catalogProductName: 1 } }
     ]).exec();
+  }
+
+  async deleteAll() {
+    return this.scrapedProductModel.deleteMany({}).exec();
   }
 }

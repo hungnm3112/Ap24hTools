@@ -12,6 +12,9 @@ export class ScrapedProduct {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Competitor', required: true })
   siteId: Competitor | Types.ObjectId; // ID của website/đối thủ
 
+  @Prop({ required: true })
+  siteName: string; // Tên của website (Denormalized từ Competitor để truy vấn nhanh)
+
   @Prop({ required: true, unique: true })
   productUrl: string; // URL của sản phẩm (dùng làm unique key để cập nhật)
 
@@ -26,6 +29,9 @@ export class ScrapedProduct {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'CatalogProduct', default: null })
   catalogProductId: CatalogProduct | Types.ObjectId; // ID của Sản phẩm Chuẩn (nếu đã được map)
+
+  @Prop({ default: null })
+  catalogProductName: string; // Tên sản phẩm chuẩn (Denormalized từ CatalogProduct để truy vấn nhanh)
 
   @Prop({ default: false })
   isAiMatched: boolean; // Đánh dấu đây là kết quả map tự động của AI

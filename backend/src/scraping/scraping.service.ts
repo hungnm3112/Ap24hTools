@@ -336,6 +336,7 @@ export class ScrapingService {
             
             await this.scrapedProductsService.upsertProduct({
               siteId: competitor._id,
+              siteName: competitor.name, // Denormalized field
               productUrl: p.productUrl,
               productName: p.name,
               productPrice: p.price,

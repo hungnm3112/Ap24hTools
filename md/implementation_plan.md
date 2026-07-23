@@ -607,33 +607,24 @@ flowchart TD
 - **[x] Cào Thủ công 1 URL:** Sử dụng Form `test-scraping`, query params được mã hóa `encodeURIComponent`.
 - **[x] Tối ưu Performance (Cơ bản):** `route.abort()` để chặn `image`, `media`, `font`. Regex tự động parse giá sang dạng Số.
 
-**Phân tích Nút thắt Cổ chai (Bottleneck Analysis) & Đề xuất Tối ưu:**
-Hiện tại, logic cào dữ liệu hoạt động chính xác nhưng **chạy rất chậm**. Nguyên nhân chính và giải pháp đề xuất:
-1. **Quá trình AI Matching đồng bộ (Synchronous AI Matching):**
-   - *Vấn đề:* Vòng lặp cào hiện tại đợi `scrapedProductsService.upsertProduct` hoàn tất cho TỪNG sản phẩm mới chuyển sang sản phẩm tiếp theo. Quá trình `upsertProduct` lại gọi đến Gemini AI (`findBestMatch`), mất trung bình 3-5 giây mỗi sản phẩm. Với 20 sản phẩm trên một trang, thời gian chờ lên đến 1-2 phút chỉ cho 1 trang.
-   - *Giải pháp (Đề xuất):* Tách rời việc cào (Scraping) và việc khớp AI (Matching). Luồng cào chỉ làm nhiệm vụ lưu thô sản phẩm xuống DB với trạng thái `isAiMatched: false`. Một tiến trình nền (Background Worker / BullMQ / Queue) sẽ quét các sản phẩm chưa match và gọi AI xử lý bất đồng bộ (Concurrent) hoặc xử lý theo batch (nhóm 10 sản phẩm gửi cho AI 1 lần) để tiết kiệm thời gian và Quota.
-2. **Cào tuần tự (Sequential Scraping):**
-   - *Vấn đề:* Đang dùng vòng lặp `for...of` chạy qua từng URL, từng Competitor một cách tuần tự.
-   - *Giải pháp (Đề xuất):* Chạy `Promise.all` với giới hạn concurrency (ví dụ `p-limit` = 3) để mở 3 tab Playwright cào song song 3 URL cùng lúc.
-3. **Wait For Timeout quá cứng nhắc:**
-   - *Vấn đề:* Có nhiều đoạn `waitForTimeout(500)` hoặc chờ mạng tĩnh lặng `networkidle` đang tốn thời gian cứng.
-   - *Giải pháp (Đề xuất):* Sử dụng các assertion linh hoạt hơn của Playwright hoặc dựa vào API interception thay vì đợi DOM idle.
+**Phân tích & Tối ưu Nút thắt Cổ chai (ĐÃ TRIỂN KHAI):**
+- **[x] Tách rời quá trình AI Matching (Batching):** Luồng cào chỉ làm nhiệm vụ lưu thô sản phẩm xuống DB (`isAiMatched: false`). Một tiến trình nền (`AiMatcherService`) quét các sản phẩm chưa match mỗi phút và gom 10 sản phẩm gửi cho AI xử lý 1 lần (Batch Prompting) để tiết kiệm thời gian và Quota.
+- **[x] Cào đa luồng (Concurrent Scraping):** Sử dụng `Promise.all` kết hợp kỹ thuật Chunking để mở 3 tab Playwright cào song song 3 URL cùng lúc, tăng tốc độ gấp 3 lần.
+- **[x] Tối ưu Wait (Smart Assertions):** Giảm thời gian chờ vòng lặp `waitForTimeout` xuống 200ms và chặn tải triệt để tài nguyên tĩnh (`*.png`, `*.css`, v.v.).
 
 #### 4.2. Kiến trúc Dữ liệu & So khớp bằng AI (Catalog Product)
 - **[x] Đổi tên/Chuẩn hóa Database (MasterProduct -> CatalogProduct):** Thay đổi tư duy từ "AP24h vs Đối thủ" sang "So sánh Web-vs-Web ngang hàng". Thiết kế bảng trung tâm `catalog_products` độc lập làm "Cái trục".
 - **[x] Thuật toán So khớp (AI + Pre-filter):**
   1. Khi có 1 Scraped Product mới, kiểm tra Caching (lưu trong DB) chưa. Nếu có, dùng ID cũ.
   2. Nếu chưa có mapping, tiến hành **Pre-filter (Lọc thô)** để tìm 20 ứng viên gần giống nhất:
-     - **Bước 2.1 (Tiền xử lý):** Chuyển tên SP cào được sang chữ thường, xóa ký tự đặc biệt, và lọc bỏ các từ khóa rác (dựa vào bảng `ignored_keywords` như "chính hãng", "vn/a", "giá sốc"). VD: "Điện thoại iPhone 16 Pro Max 256GB Chính hãng VN/A" -> "iphone 16 pro max 256gb".
-     - **Bước 2.2 (MongoDB Text Search):** Bảng `CatalogProducts` sẽ được đánh index `$text` ở trường `normalizedName`. Hệ thống dùng lệnh `$text: { $search: "iphone 16 pro max 256gb" }` để MongoDB tự động tìm và chấm điểm (Score).
-     - **Bước 2.3:** Sort theo điểm `textScore` giảm dần và chỉ lấy `limit(20)` sản phẩm. (Nếu MongoDB trả về rỗng, coi như chắc chắn là SP mới).
-  3. Gửi danh sách 20 ứng viên này + Tên sản phẩm mới cho **Gemini AI**.
-  4. Nếu AI chọn 1 -> Link URL vào `CatalogProductId`. Nếu AI trả về 'NEW' -> Tạo `CatalogProduct` mới.
-
+     - **Bước 2.1 (Tiền xử lý):** Chuyển tên SP cào được sang chữ thường, xóa ký tự đặc biệt, và lọc bỏ từ khóa rác.
+     - **Bước 2.2 (MongoDB Text Search):** Tìm bằng index `$text` và sắp xếp theo `textScore` lấy top 20.
+  3. **[x] (Đã đổi sang Batching Cronjob)** `AiMatcherService` sẽ quét định kỳ, gom nhóm các sản phẩm mới và danh sách ứng viên gửi cho **Gemini AI** dưới dạng mảng JSON.
+  4. Nếu AI trả về ID -> Link URL vào `CatalogProductId`. Nếu AI trả về 'NEW' -> Tạo `CatalogProduct` mới.
 
 #### 4.3. Giao diện Ma trận Đối chiếu giá N-Web (N-way Comparison Dashboard)
-- **[ ] Viết API thống kê giá của tất cả các Site dựa trên Catalog Product ID.**
-- **[ ] Xây dựng Bảng đối chiếu giá dạng Ma trận (Matrix Table) tại `/price-comparison`.**
+- **[x] Viết API thống kê giá của tất cả các Site dựa trên Catalog Product ID.**
+- **[x] Xây dựng Bảng đối chiếu giá dạng Ma trận (Matrix Table) tại `/price-comparison`.**
 - **Trục dọc (Rows):** Danh sách `CatalogProducts` (VD: iPhone 16 Pro Max 256GB).
 - **Trục ngang (Columns):** Chọn Web Gốc (Base Site) và N đối thủ muốn so sánh. Các đối thủ không kinh doanh sẽ báo trống.
 

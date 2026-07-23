@@ -55,3 +55,17 @@ export async function runManualScrapingAction(competitorId?: string, targetUrl?:
     throw error;
   }
 }
+
+export async function deleteAllScrapedProductsAction() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scraped-products/all`, {
+      method: 'DELETE',
+      headers: await getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Xóa dữ liệu thất bại');
+    return { success: true, message: 'Đã xóa toàn bộ dữ liệu cào' };
+  } catch (error: any) {
+    console.error(error);
+    return { success: false, message: error.message };
+  }
+}

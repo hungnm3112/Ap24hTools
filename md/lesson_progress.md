@@ -44,9 +44,14 @@
 39. **Prompt Engineering cho AI**: Kỹ thuật viết Prompt hiệu quả ép AI đóng vai chuyên gia Web Scraping và trả về dữ liệu chuẩn JSON cho Selector.
 40. **Xử lý Đa luồng (Parallel Bất đồng bộ)**: Trải nghiệm thực tế việc Frontend gửi loạt API AI đồng thời để tối ưu thời gian chờ của người dùng.
 
-## 🚀 Các Kỹ Năng Mới Sẽ Học Ở Phase Tiếp Theo (Phase 4: Thuật toán So khớp & Cập nhật Giá tự động) - [CHƯA HỌC]
-1. **Thuật toán Chuẩn hóa Text & So khớp (Token Matching)**: Cách viết thuật toán (Algorithm) tính toán độ tương đồng (similarity) giữa 2 chuỗi tên sản phẩm.
-2. **Cronjob & Tự động hóa (Task Scheduling)**: Dùng `@nestjs/schedule` để hẹn giờ cào dữ liệu lặp lại theo khung giờ cố định.
-3. **Mongoose Batch Insert & Upsert**: Xử lý dữ liệu lớn bằng cách Update-hoặc-Insert để tránh trùng lặp thay vì save() từng phần tử.
-4. **Playwright Tương tác website (Auto-Action)**: Không chỉ là Proxy để xem, bạn sẽ dùng Playwright để đăng nhập vào trang chủ AP24h, tìm kiếm ô nhập giá, và submit form tự động!
-5. **Thiết kế Bảng so sánh (Comparison UI)**: Tạo giao diện Dashboard báo cáo chênh lệch phần trăm (%).
+## 🚀 Các Kỹ Năng Đã Học Ở Phase 4 (So khớp AI & Cào dữ liệu nâng cao)
+48. **Thuật toán Chuẩn hóa Text & Lọc rác (Pre-filter)**: Sử dụng MongoDB Text Search kết hợp `IgnoredKeywords` để tìm 20 ứng viên gần giống nhất trước khi gọi AI.
+49. **Xử lý Batch & Đa luồng (Concurrency)**: Sử dụng `Promise.all` với kỹ thuật Chunking để Playwright cào 3 URL cùng lúc. Tách rời luồng cào dữ liệu thô và luồng AI Matching.
+50. **Cronjob & Task Scheduling**: Sử dụng `@nestjs/schedule` (`@Cron`) tạo tiến trình ngầm `AiMatcherService` quét và xử lý AI hàng loạt mỗi phút.
+51. **Prompt Engineering Nâng cao**: Ép Gemini AI trả về mảng JSON chặt chẽ cho nhiều sản phẩm cùng lúc (Batching) để tối ưu Quota (15 req/min).
+52. **Mongoose Upsert & Schema Reference**: Lưu hoặc Cập nhật sản phẩm bằng `findOneAndUpdate` và liên kết dữ liệu qua `catalogProductId`.
+53. **Thiết kế Bảng so sánh (Matrix UI)**: Xây dựng giao diện Ma trận đối chiếu giá đa chiều, sử dụng MUI DataGrid hoặc Ant Design Table nâng cao.
+
+## 🚀 Các Kỹ Năng Sẽ Học Ở Phase Cuối (Tự động hóa Playwright Auto-Action) - [CHƯA HỌC]
+54. **Playwright Tương tác website (Auto-Action)**: Dùng Playwright đăng nhập vào trang chủ AP24h, tìm kiếm ô nhập giá, và submit form tự động!
+55. **Vẽ biểu đồ Thống kê (Data Visualization)**: Sử dụng Chart.js hoặc Recharts hiển thị lịch sử biến động giá.

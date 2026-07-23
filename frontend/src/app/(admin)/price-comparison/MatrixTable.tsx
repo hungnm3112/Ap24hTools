@@ -27,32 +27,27 @@ export default function MatrixTable() {
 
   // Trích xuất danh sách tất cả các đối thủ để tạo cột động
   const columns = useMemo(() => {
-    // 3 cột cố định
+    // Cột Sản phẩm cố định
     const baseColumns: GridColDef[] = [
       { 
         field: 'catalogProductName', 
         headerName: 'Sản Phẩm Chuẩn', 
-        width: 300,
-        renderCell: (params) => (
-          <div className="font-medium text-gray-800">{params.value}</div>
-        )
-      },
-      { 
-        field: 'lowestPrice', 
-        headerName: 'Thấp Nhất', 
-        width: 130,
-        renderCell: (params) => (
-          <div className="text-green-600 font-bold">{formatCurrency(params.value)}</div>
-        )
-      },
-      { 
-        field: 'highestPrice', 
-        headerName: 'Cao Nhất', 
-        width: 130,
-        renderCell: (params) => (
-          <div className="text-red-500 font-semibold">{formatCurrency(params.value)}</div>
-        )
-      },
+        width: 350,
+        renderCell: (params) => {
+          const pricesArray = params.row.prices || [];
+          const imgUrl = pricesArray.find((p: any) => p.image)?.image || '';
+          return (
+            <div className="flex items-center gap-3">
+              {imgUrl ? (
+                <img src={imgUrl} alt={params.value} className="w-12 h-12 object-contain rounded border border-gray-200 bg-white" />
+              ) : (
+                <div className="w-12 h-12 rounded border border-gray-200 bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">No Img</div>
+              )}
+              <div className="font-medium text-gray-800 break-words line-clamp-2" title={params.value}>{params.value}</div>
+            </div>
+          )
+        }
+      }
     ];
 
     // Tìm tất cả các siteName duy nhất từ toàn bộ dữ liệu
@@ -76,8 +71,12 @@ export default function MatrixTable() {
           return <div className="text-gray-300 italic text-sm">N/A</div>;
         }
 
-        const isLowest = siteData.price === params.row.lowestPrice;
-        const isHighest = siteData.price === params.row.highestPrice;
+        const validPrices = pricesArray.map((p: any) => p.price).filter((price: number) => price > 0);
+        const lowestPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+        const highestPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
+
+        const isLowest = siteData.price === lowestPrice && validPrices.length > 1;
+        const isHighest = siteData.price === highestPrice && validPrices.length > 1;
 
         return (
           <div className={`w-full h-full p-2 flex flex-col justify-center rounded transition-colors
@@ -85,9 +84,9 @@ export default function MatrixTable() {
             ${isHighest ? 'bg-red-50 border-l-4 border-red-500' : ''}
           `}>
             <div className="flex items-center justify-between">
-              <span className={`font-semibold ${isLowest ? 'text-green-700' : isHighest ? 'text-red-700' : 'text-gray-700'}`}>
+              <a href={siteData.url} target="_blank" rel="noopener noreferrer" className={`font-semibold hover:underline ${isLowest ? 'text-green-700' : isHighest ? 'text-red-700' : 'text-gray-700'}`}>
                 {formatCurrency(siteData.price)}
-              </span>
+              </a>
             </div>
             {siteData.isAiMatched && (
               <div className="mt-1">

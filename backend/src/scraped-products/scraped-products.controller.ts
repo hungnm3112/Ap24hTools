@@ -14,4 +14,9 @@ export class ScrapedProductsController {
   findAll() {
     return this.scrapedProductsService.findAll();
   }
+
+  @Delete('all')
+  deleteAll() {
+    return this.scrapedProductsService.deleteAll();
+  }
 }
