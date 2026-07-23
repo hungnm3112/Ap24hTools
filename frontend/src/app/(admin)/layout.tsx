@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { key: '/dashboard', icon: <DashboardOutlined />, label: <Link href="/dashboard">Dashboard</Link> },
     { key: '/pricing', icon: <DollarOutlined />, label: <Link href="/pricing">Đối chiếu giá</Link> },
-    { key: '/competitors', icon: <UserOutlined />, label: <Link href="/competitors">Đối thủ</Link> },
+    { key: '/competitors', icon: <UserOutlined />, label: <Link href="/competitors">Domain</Link> },
     { key: '/categories', icon: <TagsOutlined />, label: <Link href="/categories">Danh mục</Link> },
     { key: '/keywords', icon: <ProfileOutlined />, label: <Link href="/keywords">Từ khóa</Link> },
     { key: '/history', icon: <HistoryOutlined />, label: <Link href="/history">Lịch sử</Link> },

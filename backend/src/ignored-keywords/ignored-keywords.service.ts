@@ -71,7 +71,7 @@ export class IgnoredKeywordsService implements OnModuleInit {
   }
 
   update(id: string, updateDto: any) {
-    return this.ignoredKeywordModel.findByIdAndUpdate(id, updateDto, { new: true }).exec();
+    return this.ignoredKeywordModel.findByIdAndUpdate(id, updateDto, { returnDocument: 'after' }).exec();
   }
 
   remove(id: string) {

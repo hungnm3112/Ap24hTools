@@ -99,12 +99,12 @@ export class CategoriesService {
     try {
       /*
        * LÝ DO: Dùng findByIdAndUpdate
-       * Tham số { new: true } để Mongoose trả về object SAU KHI update (mặc định trả về object cũ).
+       * Tham số { returnDocument: 'after' } để Mongoose trả về object SAU KHI update (mặc định trả về object cũ).
        */
       const updatedCategory = await this.categoryModel.findByIdAndUpdate(
         id,
         updateCategoryDto,
-        { new: true }
+        { returnDocument: 'after' }
       ).exec();
 
       if (!updatedCategory) {

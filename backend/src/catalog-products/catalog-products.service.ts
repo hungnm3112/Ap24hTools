@@ -35,7 +35,7 @@ export class CatalogProductsService {
           normalizedName: normalizedName
         } 
       },
-      { new: true, upsert: true }
+      { returnDocument: 'after', upsert: true }
     );
     return result;
   }
@@ -55,8 +55,8 @@ export class CatalogProductsService {
   }
 
   update(id: string, updateCatalogProductDto: any) {
-    // Sử dụng findByIdAndUpdate, { new: true } để trả về document sau khi đã update
-    return this.catalogProductModel.findByIdAndUpdate(id, updateCatalogProductDto, { new: true }).exec();
+    // Sử dụng findByIdAndUpdate, { returnDocument: 'after' } để trả về document sau khi đã update
+    return this.catalogProductModel.findByIdAndUpdate(id, updateCatalogProductDto, { returnDocument: 'after' }).exec();
   }
 
   remove(id: string) {

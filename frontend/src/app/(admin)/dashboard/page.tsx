@@ -19,7 +19,7 @@ export default function DashboardPage() {
         </Col>
         <Col span={6}>
           <Card variant="borderless" className="shadow-sm">
-            <Statistic title="Đối thủ cạnh tranh" value={15} />
+            <Statistic title="Domain cạnh tranh" value={15} />
           </Card>
         </Col>
         <Col span={6}>

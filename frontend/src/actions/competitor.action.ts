@@ -20,7 +20,7 @@ export async function getCompetitorsAction() {
     });
     const data = await res.json();
     if (!res.ok) {
-      return { success: false, message: data.message || 'Lỗi khi lấy danh sách đối thủ' };
+      return { success: false, message: data.message || 'Lỗi khi lấy danh sách Domain' };
     }
     return { success: true, data };
   } catch (error) {
@@ -39,7 +39,7 @@ export async function createCompetitorAction(payload: any) {
     if (!res.ok) {
       return { success: false, message: Array.isArray(data.message) ? data.message[0] : data.message };
     }
-    return { success: true, message: 'Thêm đối thủ thành công' };
+    return { success: true, message: 'Thêm Domain thành công' };
   } catch (error) {
     return { success: false, message: 'Lỗi kết nối server' };
   }
@@ -56,7 +56,7 @@ export async function updateCompetitorAction(id: string, payload: any) {
     if (!res.ok) {
       return { success: false, message: Array.isArray(data.message) ? data.message[0] : data.message };
     }
-    return { success: true, message: 'Cập nhật đối thủ thành công' };
+    return { success: true, message: 'Cập nhật Domain thành công' };
   } catch (error) {
     return { success: false, message: 'Lỗi kết nối server' };
   }
@@ -70,9 +70,9 @@ export async function deleteCompetitorAction(id: string) {
     });
     const data = await res.json();
     if (!res.ok) {
-      return { success: false, message: data.message || 'Lỗi xóa đối thủ' };
+      return { success: false, message: data.message || 'Lỗi xóa Domain' };
     }
-    return { success: true, message: 'Xóa đối thủ thành công' };
+    return { success: true, message: 'Xóa Domain thành công' };
   } catch (error) {
     return { success: false, message: 'Lỗi kết nối server' };
   }

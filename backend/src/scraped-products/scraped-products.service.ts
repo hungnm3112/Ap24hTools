@@ -34,83 +34,85 @@ export class ScrapedProductsService {
     let matchScore = existing?.matchScore || 0;
     let aiConfidence = existing?.aiConfidence || 'LOW';
 
-    // 2. Nếu chưa có mapping (SP mới tinh hoặc chưa map được), tiến hành AI Matching
-    if (!catalogProductId && this.genAI) {
-      try {
-        // Bước 2.1: Lọc thô - Tiền xử lý
-        const normalizedName = this.ignoredKeywordsService.normalizeProductName(productData.productName);
-
-        // Bước 2.2: Lọc thô - Tìm 20 ứng viên gần giống bằng MongoDB Text Search
-        const candidates = await this.catalogProductsService.findSimilarProducts(normalizedName);
-
-        if (candidates.length === 0) {
-          // Bảng Catalog hoàn toàn trống hoặc không có gì giống -> Tạo mới luôn không cần gọi AI
-          const newCatalog = await this.catalogProductsService.findOrCreateCatalogProduct(productData.productName, normalizedName);
-          catalogProductId = newCatalog._id;
-          isAiMatched = false;
-          matchScore = 100;
-          aiConfidence = 'HIGH';
-        } else {
-          // Bước 3: Gửi cho Gemini AI phán đoán
-          const prompt = `Bạn là một chuyên gia dữ liệu E-commerce. Nhiệm vụ của bạn là map sản phẩm mới cào được vào 1 Sản phẩm Chuẩn (Catalog Product) trong danh sách ứng viên.
-                          Sản phẩm mới: "${productData.productName}" (Đã chuẩn hóa: "${normalizedName}")
-                          Danh sách ứng viên (ID | Tên):
-                          ${candidates.map(c => `- ${c._id} | ${c.name}`).join('\n')}
-
-                          Luật lệ bắt buộc:
-                          1. Nếu bạn chắc chắn sản phẩm mới trùng khớp với 1 ứng viên trong danh sách, hãy trả về CHỈ MỘT ID CỦA ỨNG VIÊN ĐÓ.
-                          2. Nếu bạn thấy sản phẩm mới hoàn toàn khác biệt (khác dòng máy, khác bộ nhớ, không thuộc về ứng viên nào), hãy trả về chữ "NEW".
-                          3. CHỈ TRẢ VỀ ĐÚNG 1 DÒNG TEXT CHỨA ID HOẶC CHỮ NEW, KHÔNG GIẢI THÍCH THÊM BẤT KỲ ĐIỀU GÌ.`;
-
-          const geminiModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3.5-flash';
-          const model = this.genAI.getGenerativeModel({ model: geminiModel });
-          const result = await model.generateContent(prompt);
-          const aiResponse = result.response.text().trim();
-
-          if (aiResponse === 'NEW' || aiResponse.length > 30) { // length > 30 đề phòng AI trả lời luyên thuyên
-            // AI báo là sản phẩm hoàn toàn mới -> Tạo mới vào Từ điển Catalog
-            const newCatalog = await this.catalogProductsService.findOrCreateCatalogProduct(productData.productName, normalizedName);
-            catalogProductId = newCatalog._id;
-            isAiMatched = true;
-            matchScore = 100; // Vì nó là chính nó
-            aiConfidence = 'HIGH';
-          } else {
-            // AI đã chọn 1 ID
-            const matchedCandidate = candidates.find(c => c._id.toString() === aiResponse);
-            if (matchedCandidate) {
-              catalogProductId = matchedCandidate._id;
-              isAiMatched = true;
-              matchScore = 90; // AI match thường cho điểm 90
-              aiConfidence = 'MEDIUM'; // Cần Admin review lại trên giao diện
-            } else {
-              // AI trả về ID linh tinh không có trong mảng -> Bạo dạn tạo mới fallback
-              const newCatalog = await this.catalogProductsService.findOrCreateCatalogProduct(productData.productName, normalizedName);
-              catalogProductId = newCatalog._id;
-            }
-          }
-        }
-      } catch (error) {
-        this.logger.error(`AI Matching failed for ${productData.productName}: ${error.message}`);
-      }
-    }
-
-    // 3. Cập nhật vào Scraped Product
+    // 2. Chỉ lưu thô (Không gọi AI ở đây nữa)
+    // Tiến trình AI Matcher (chạy ngầm) sẽ chịu trách nhiệm quét các sản phẩm chưa match để xử lý sau.
+    
     const payload = {
       ...productData,
-      catalogProductId,
-      isAiMatched,
-      matchScore,
-      aiConfidence
+      catalogProductId: catalogProductId, // Giữ lại ID cũ nếu đã từng match thành công
+      isAiMatched: isAiMatched,
+      matchScore: matchScore,
+      aiConfidence: aiConfidence
     };
 
     return this.scrapedProductModel.findOneAndUpdate(
       { productUrl: productData.productUrl },
       { $set: payload },
-      { new: true, upsert: true }
+      { returnDocument: 'after', upsert: true }
     );
   }
 
   async findAll() {
     return this.scrapedProductModel.find().populate('siteId').populate('catalogProductId').exec();
+  }
+
+  // --- API AGGREGATION CHO MATRIX BẢNG GIÁ N-WEB ---
+  async getPriceMatrix() {
+    return this.scrapedProductModel.aggregate([
+      // 1. Chỉ lấy những ScrapedProduct đã được map với Catalog
+      { $match: { catalogProductId: { $ne: null } } },
+      
+      // 2. Lookup để lấy tên Web Đối thủ (Competitor)
+      {
+        $lookup: {
+          from: 'competitors', 
+          localField: 'siteId',
+          foreignField: '_id',
+          as: 'site'
+        }
+      },
+      { $unwind: { path: '$site', preserveNullAndEmptyArrays: true } },
+
+      // 3. Lookup để lấy thông tin Sản phẩm chuẩn (Catalog Product)
+      {
+        $lookup: {
+          from: 'catalogproducts', // Mongoose mặc định thêm 's' thành catalogproducts
+          localField: 'catalogProductId',
+          foreignField: '_id',
+          as: 'catalog'
+        }
+      },
+      { $unwind: { path: '$catalog', preserveNullAndEmptyArrays: true } },
+
+      // 4. Gom nhóm (Group) theo Catalog Product
+      {
+        $group: {
+          _id: '$catalogProductId',
+          catalogProductName: { $first: '$catalog.name' },
+          prices: {
+            $push: {
+              siteId: '$site._id',
+              siteName: '$site.name',
+              price: '$productPrice',
+              url: '$productUrl',
+              isAiMatched: '$isAiMatched',
+              matchScore: '$matchScore',
+              aiConfidence: '$aiConfidence'
+            }
+          }
+        }
+      },
+
+      // 5. Thêm các trường tính toán (Thấp nhất, Cao nhất)
+      {
+        $addFields: {
+          lowestPrice: { $min: '$prices.price' },
+          highestPrice: { $max: '$prices.price' }
+        }
+      },
+
+      // 6. Sắp xếp danh sách (tuỳ chọn) theo tên sản phẩm A-Z
+      { $sort: { catalogProductName: 1 } }
+    ]).exec();
   }
 }

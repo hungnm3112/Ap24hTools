@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { getCompetitorsAction, getScrapedProductsAction, runManualScrapingAction } from '@/actions/scraping.action';
+import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
 function TestScrapingContent() {
@@ -50,13 +51,13 @@ function TestScrapingContent() {
       
       <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-end">
         <div className="flex-1">
-          <label className="block text-sm font-semibold mb-1">Chọn đối thủ</label>
+          <label className="block text-sm font-semibold mb-1">Chọn Domain</label>
           <select 
             className="border p-2 rounded w-full" 
             value={selectedCompetitorId} 
             onChange={(e) => setSelectedCompetitorId(e.target.value)}
           >
-            <option value="">-- Cào Tất Cả Đối Thủ --</option>
+            <option value="">-- Cào Tất Cả Domain --</option>
             {competitors.map(c => (
               <option key={c._id} value={c._id}>{c.name}</option>
             ))}
@@ -64,24 +65,47 @@ function TestScrapingContent() {
         </div>
         
         <div className="flex-2 min-w-[300px]">
-          <label className="block text-sm font-semibold mb-1">Cào cụ thể 1 URL (Tùy chọn)</label>
-          <input 
-            type="text"
+          <label className="block text-sm font-semibold mb-1">Cào 1 URL cụ thể (Tùy chọn)</label>
+          <select 
             className="border p-2 rounded w-full" 
-            placeholder="Để trống để cào tất cả URL của đối thủ..."
             value={targetUrl}
             onChange={(e) => setTargetUrl(e.target.value)}
-          />
+            disabled={!selectedCompetitorId}
+          >
+            <option value="">-- Để trống để cào tất cả URL của Domain --</option>
+            {selectedCompetitorId && competitors.find(c => c._id === selectedCompetitorId)?.scrapingUrls?.map((u: any, idx: number) => (
+              <option key={idx} value={u.url}>{u.url}</option>
+            ))}
+          </select>
         </div>
 
         <button 
           onClick={runScraping}
           disabled={loading}
-          className="bg-blue-600 text-white px-6 py-2 h-[42px] rounded hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-600 text-white px-6 py-2 h-[42px] rounded hover:bg-blue-700 disabled:opacity-70 flex items-center gap-2 transition-all min-w-[180px] justify-center"
         >
-          {loading ? 'Đang chạy (Vui lòng chờ...)' : 'Cào Dữ Liệu Ngay'}
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Đang cào dữ liệu...
+            </>
+          ) : (
+            'Cào Dữ Liệu Ngay'
+          )}
         </button>
       </div>
+
+      {loading && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded text-blue-700 text-sm flex items-start gap-3 animate-pulse">
+          <Loader2 className="w-5 h-5 animate-spin mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold">Hệ thống đang thực hiện cào dữ liệu và phân tích AI...</p>
+            <p className="mt-1">
+              Quá trình này có thể mất vài phút vì AI cần thời gian để phân tích và map (nhận diện) từng sản phẩm một cách chính xác nhất. Vui lòng không đóng trang web trong lúc này.
+            </p>
+          </div>
+        </div>
+      )}
 
       <h2 className="text-xl font-bold mb-2">Danh sách Sản phẩm đã cào ({scrapedProducts.length})</h2>
       <div className="overflow-x-auto bg-white rounded shadow">
@@ -91,7 +115,7 @@ function TestScrapingContent() {
               <th className="p-3 border-b">Ảnh</th>
               <th className="p-3 border-b">Tên sản phẩm</th>
               <th className="p-3 border-b">Giá (VNĐ)</th>
-              <th className="p-3 border-b">Web Đối thủ</th>
+              <th className="p-3 border-b">Web Domain</th>
             </tr>
           </thead>
           <tbody>

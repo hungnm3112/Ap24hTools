@@ -12,7 +12,7 @@ export class ScrapingService {
   constructor(
     private readonly competitorsService: CompetitorsService,
     private readonly scrapedProductsService: ScrapedProductsService,
-  ) {}
+  ) { }
   async getProxyHtml(url: string, customCookies?: string): Promise<string> {
     if (!url) {
       throw new BadRequestException('Bắt buộc phải cung cấp URL để cào dữ liệu');
@@ -21,7 +21,7 @@ export class ScrapingService {
     const browser = await chromium.launch({ headless: true });
     try {
       const page = await browser.newPage();
-      
+
       if (customCookies) {
         await page.setExtraHTTPHeaders({ 'Cookie': customCookies });
       }
@@ -39,7 +39,7 @@ export class ScrapingService {
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 
       const originUrl = new URL(url).origin;
-      
+
       await page.evaluate((origin) => {
         // 1. XÓA TOÀN BỘ SCRIPT CỦA ĐỐI THỦ
         // LÝ DO (WHY): 
@@ -189,7 +189,7 @@ export class ScrapingService {
 
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
-      
+
       try {
         // Cố gắng parse JSON trực tiếp
         // Đôi khi AI vẫn cố chấp trả về ```json ... ```, ta cần tiền xử lý
@@ -226,7 +226,8 @@ export class ScrapingService {
       return { status: 'No active competitors' };
     }
 
-    const browser = await chromium.launch({ headless: true });
+    this.logger.log(`Bắt đầu khởi chạy trình duyệt Playwright (headless: false) để quan sát...`);
+    const browser = await chromium.launch({ headless: false });
     
     for (const competitor of competitors) {
       this.logger.log(`Đang cào dữ liệu cho đối thủ: ${competitor.name}`);
@@ -239,158 +240,173 @@ export class ScrapingService {
         continue;
       }
 
-      for (const urlObj of competitor.scrapingUrls) {
-        const url = urlObj.url;
-        // Bỏ qua nếu có yêu cầu cào đúng 1 URL cụ thể
-        if (targetUrl && url !== targetUrl) continue;
+      const urlsToRun = competitor.scrapingUrls
+        .filter(u => !targetUrl || u.url === targetUrl)
+        .map(u => u.url);
 
-        this.logger.log(`- Đang xử lý URL: ${url}`);
+      const chunkSize = 3;
+      for (let i = 0; i < urlsToRun.length; i += chunkSize) {
+        const chunkUrls = urlsToRun.slice(i, i + chunkSize);
+        this.logger.log(`>> Chạy song song Batch [${i + 1} - ${i + chunkUrls.length}] / ${urlsToRun.length} URLs...`);
         
-        try {
-          const page = await browser.newPage();
-          // Chặn tài nguyên tĩnh
-          await page.route('**/*', (route) => {
-            const type = route.request().resourceType();
-            if (['image', 'media', 'font'].includes(type)) {
-              route.continue();
-            } else {
-              route.continue();
-            }
-          });
-
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-          
-          let hasNextPage = true;
-          let totalExtracted = 0;
-          const seenUrls = new Set<string>();
-
-          while (hasNextPage) {
-            const plainSelectors = JSON.parse(JSON.stringify(selectors));
-            // Lấy danh sách sản phẩm hiện tại trên trang
-            const products = await page.evaluate((sel) => {
-              const combinedSelector = sel.productListContainer 
-                ? `${sel.productListContainer} ${sel.productItem}` 
-                : sel.productItem;
-              const items = document.querySelectorAll(combinedSelector);
-              const result: { name: string; price: number; image: string; productUrl: string; }[] = [];
-              items.forEach(item => {
-                let name = '', price = 0, image = '', productUrl = '';
-                
-                if (sel.productName) {
-                  const el = item.querySelector(sel.productName);
-                  if (el) name = el.textContent?.trim() || '';
-                }
-                if (sel.productPrice) {
-                  const el = item.querySelector(sel.productPrice);
-                  if (el) {
-                    const priceText = el.textContent?.replace(/[^0-9]/g, '');
-                    if (priceText) price = parseInt(priceText, 10);
-                  }
-                }
-                if (sel.productImage) {
-                  const el = item.querySelector(sel.productImage);
-                  if (el) {
-                    if (el.tagName === 'IMG') image = el.getAttribute('src') || '';
-                    else image = el.getAttribute('data-src') || el.style.backgroundImage || '';
-                  }
-                }
-                
-                // Cố gắng tìm thẻ a để lấy URL sản phẩm (nếu user cấu hình thẻ a thì lấy href)
-                const aEl = item.tagName === 'A' ? item : item.querySelector('a');
-                if (aEl) productUrl = aEl.getAttribute('href') || '';
-                
-                // Chuẩn hóa URL nếu bị thiếu gốc (Relative Path) đối với productUrl
-                const origin = new URL(location.href).origin;
-                if (productUrl && productUrl.startsWith('/')) {
-                  productUrl = origin + productUrl;
-                }
-
-                if (name && productUrl) {
-                  result.push({ name, price, image, productUrl });
-                }
-              });
-              return result;
-            }, plainSelectors);
-
-            // Lưu sản phẩm vào Database (Upsert)
-            for (const p of products) {
-              if (!seenUrls.has(p.productUrl)) {
-                seenUrls.add(p.productUrl);
-                await this.scrapedProductsService.upsertProduct({
-                  siteId: competitor._id,
-                  productUrl: p.productUrl,
-                  productName: p.name,
-                  productPrice: p.price,
-                  productImage: p.image
-                });
-                totalExtracted++;
-              }
-            }
-
-            // Xử lý Phân trang (Hybrid)
-            if (nextPageSelector) {
-              const currentProductCount = await page.locator(productItemSelector).count();
-              const nextBtn = page.locator(nextPageSelector).first();
-              
-              if (await nextBtn.isVisible()) {
-                this.logger.log(`Clicking next page... (đang có ${currentProductCount} SP)`);
-                await nextBtn.click({ force: true });
-                
-                // Chờ cho đến khi số lượng SP tăng lên (Ajax Load More) hoặc URL thay đổi (Next Page)
-                try {
-                  const currentUrl = page.url();
-                  let waitCount = 0;
-                  let added = false;
-                  while (waitCount < 20) { // Đợi tối đa 10s (20 * 500ms)
-                    await page.waitForTimeout(500);
-                    // Nếu URL thay đổi -> đã sang trang mới
-                    if (page.url() !== currentUrl) {
-                      added = true;
-                      await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
-                      break;
-                    }
-                    // Nếu số lượng sản phẩm tăng lên -> đã Load More thành công
-                    const newCount = await page.locator(productItemSelector).count();
-                    if (newCount > currentProductCount) {
-                      added = true;
-                      break;
-                    }
-                    waitCount++;
-                  }
-                  
-                  if (!added) {
-                    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-                  }
-                } catch (e) {
-                  this.logger.warn('Lỗi khi chờ phân trang: ' + e.message);
-                }
-
-                // Kiểm tra xem số lượng phần tử có tăng lên hoặc url có thay đổi không
-                const newProductCount = await page.locator(productItemSelector).count();
-                if (newProductCount <= currentProductCount) {
-                  // Giả định nếu số lượng không đổi và URL không đổi -> Đã hết trang
-                  this.logger.log('Đã tới trang cuối cùng.');
-                  hasNextPage = false;
-                }
-              } else {
-                hasNextPage = false;
-              }
-            } else {
-              hasNextPage = false;
-            }
-          }
-          
-          this.logger.log(`=> Đã trích xuất tổng cộng ${totalExtracted} sản phẩm từ ${url}`);
-          await page.close();
-
-        } catch (err) {
-          this.logger.error(`Lỗi khi cào URL ${url}:`, err);
-        }
+        await Promise.all(chunkUrls.map(url => 
+          this.scrapeSingleUrl(browser, url, competitor, selectors)
+        ));
       }
     }
 
     await browser.close();
     this.logger.log('Hoàn thành quá trình cào dữ liệu.');
     return { status: 'success' };
+  }
+
+  private async scrapeSingleUrl(browser: any, url: string, competitor: any, selectors: any) {
+    const productItemSelector = selectors.productItem;
+    const nextPageSelector = selectors.nextPageButton;
+
+    this.logger.log(`- Đang xử lý URL: ${url}`);
+    try {
+      const page = await browser.newPage();
+      await page.route('**/*', (route) => {
+        const type = route.request().resourceType();
+        if (['image', 'media', 'font'].includes(type)) {
+          route.continue(); // Có thể tối ưu thành route.abort() nhưng để tránh lỗi layout ta cứ continue hoặc abort
+          // Đã tối ưu bằng route.abort() ở dưới
+        } else {
+          route.continue();
+        }
+      });
+      // Tối ưu chặn tài nguyên tĩnh thực sự
+      await page.route('**/*.{png,jpg,jpeg,webp,gif,woff,woff2,ttf,css}', route => route.abort());
+
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+      let hasNextPage = true;
+      let totalExtracted = 0;
+      const seenUrls = new Set<string>();
+
+      while (hasNextPage) {
+        const plainSelectors = JSON.parse(JSON.stringify(selectors));
+        const products = await page.evaluate((sel) => {
+          const combinedSelector = sel.productListContainer
+            ? `${sel.productListContainer} ${sel.productItem}`
+            : sel.productItem;
+          const items = document.querySelectorAll(combinedSelector);
+          const result: { name: string; price: number; image: string; productUrl: string; }[] = [];
+          items.forEach(item => {
+            let name = '', price = 0, image = '', productUrl = '';
+            if (sel.productName) {
+              const el = item.querySelector(sel.productName);
+              if (el) name = el.textContent?.trim() || '';
+            }
+            if (sel.productPrice) {
+              const el = item.querySelector(sel.productPrice);
+              if (el) {
+                const priceText = el.textContent?.replace(/[^0-9]/g, '');
+                if (priceText) price = parseInt(priceText, 10);
+              }
+            }
+            if (sel.productImage) {
+              const el = item.querySelector(sel.productImage);
+              if (el) {
+                if (el.tagName === 'IMG') image = el.getAttribute('src') || '';
+                else image = el.getAttribute('data-src') || el.style.backgroundImage || '';
+              }
+            }
+            const aEl = item.tagName === 'A' ? item : item.querySelector('a');
+            if (aEl) productUrl = aEl.getAttribute('href') || '';
+            const origin = new URL(location.href).origin;
+            if (productUrl && productUrl.startsWith('/')) {
+              productUrl = origin + productUrl;
+            }
+            if (name && productUrl) {
+              result.push({ name, price, image, productUrl });
+            }
+          });
+          return result;
+        }, plainSelectors);
+
+        this.logger.log(`>> Parse được ${products.length} sản phẩm trên trang hiện tại (URL: ${page.url()})`);
+        
+        let newProductsCount = 0;
+        for (const p of products) {
+          if (!seenUrls.has(p.productUrl)) {
+            seenUrls.add(p.productUrl);
+            newProductsCount++;
+            
+            await this.scrapedProductsService.upsertProduct({
+              siteId: competitor._id,
+              productUrl: p.productUrl,
+              productName: p.name,
+              productPrice: p.price,
+              productImage: p.image
+            });
+          }
+        }
+        totalExtracted += newProductsCount;
+        this.logger.log(`<< Hoàn thành lưu thô ${newProductsCount} SP vào DB (URL: ${url}).`);
+
+        if (nextPageSelector) {
+          const currentProductCount = await page.locator(productItemSelector).count();
+          const nextBtn = page.locator(nextPageSelector).first();
+
+          if (await nextBtn.isVisible()) {
+            const currentUrl = page.url();
+            this.logger.log(`Clicking next page... (đang có ${currentProductCount} SP)`);
+
+            let clickTarget = nextBtn;
+            const tagName = await nextBtn.evaluate(el => el.tagName);
+            if (tagName !== 'A') {
+              const childA = nextBtn.locator('a').first();
+              if (await childA.count() > 0) {
+                clickTarget = childA;
+              }
+            }
+
+            await clickTarget.evaluate(el => (el as HTMLElement).click());
+
+            try {
+              let waitCount = 0;
+              let isPageChanged = false;
+
+              while (waitCount < 15) { // Đợi tối đa 3s (15 * 200ms)
+                await page.waitForTimeout(200);
+
+                if (page.url() !== currentUrl) {
+                  isPageChanged = true;
+                  await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => { });
+                  break;
+                }
+
+                const newCount = await page.locator(productItemSelector).count();
+                if (newCount > currentProductCount) {
+                  isPageChanged = true;
+                  break;
+                }
+                waitCount++;
+              }
+            } catch (e) {
+              this.logger.warn('Lỗi khi chờ phân trang: ' + e.message);
+            }
+
+            const newProductCount = await page.locator(productItemSelector).count();
+            if (page.url() === currentUrl && newProductCount <= currentProductCount) {
+              this.logger.log('Đã tới trang cuối cùng hoặc không thể sang trang mới.');
+              hasNextPage = false;
+            }
+          } else {
+            hasNextPage = false;
+          }
+        } else {
+          hasNextPage = false;
+        }
+      }
+
+      this.logger.log(`=> Đã trích xuất tổng cộng ${totalExtracted} sản phẩm từ ${url}`);
+      await page.close();
+
+    } catch (err) {
+      this.logger.error(`Lỗi khi cào URL ${url}:`, err);
+    }
   }
 }

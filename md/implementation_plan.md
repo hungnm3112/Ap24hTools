@@ -605,7 +605,19 @@ flowchart TD
 **Luồng chạy Cào Dữ Liệu:**
 - **[x] Cào Tự động (Cronjob):** Chạy lặp qua mọi đối thủ mỗi ngày.
 - **[x] Cào Thủ công 1 URL:** Sử dụng Form `test-scraping`, query params được mã hóa `encodeURIComponent`.
-- **[x] Tối ưu Performance:** `route.abort()` để chặn `image`, `media`, `font`. Regex tự động parse giá sang dạng Số.
+- **[x] Tối ưu Performance (Cơ bản):** `route.abort()` để chặn `image`, `media`, `font`. Regex tự động parse giá sang dạng Số.
+
+**Phân tích Nút thắt Cổ chai (Bottleneck Analysis) & Đề xuất Tối ưu:**
+Hiện tại, logic cào dữ liệu hoạt động chính xác nhưng **chạy rất chậm**. Nguyên nhân chính và giải pháp đề xuất:
+1. **Quá trình AI Matching đồng bộ (Synchronous AI Matching):**
+   - *Vấn đề:* Vòng lặp cào hiện tại đợi `scrapedProductsService.upsertProduct` hoàn tất cho TỪNG sản phẩm mới chuyển sang sản phẩm tiếp theo. Quá trình `upsertProduct` lại gọi đến Gemini AI (`findBestMatch`), mất trung bình 3-5 giây mỗi sản phẩm. Với 20 sản phẩm trên một trang, thời gian chờ lên đến 1-2 phút chỉ cho 1 trang.
+   - *Giải pháp (Đề xuất):* Tách rời việc cào (Scraping) và việc khớp AI (Matching). Luồng cào chỉ làm nhiệm vụ lưu thô sản phẩm xuống DB với trạng thái `isAiMatched: false`. Một tiến trình nền (Background Worker / BullMQ / Queue) sẽ quét các sản phẩm chưa match và gọi AI xử lý bất đồng bộ (Concurrent) hoặc xử lý theo batch (nhóm 10 sản phẩm gửi cho AI 1 lần) để tiết kiệm thời gian và Quota.
+2. **Cào tuần tự (Sequential Scraping):**
+   - *Vấn đề:* Đang dùng vòng lặp `for...of` chạy qua từng URL, từng Competitor một cách tuần tự.
+   - *Giải pháp (Đề xuất):* Chạy `Promise.all` với giới hạn concurrency (ví dụ `p-limit` = 3) để mở 3 tab Playwright cào song song 3 URL cùng lúc.
+3. **Wait For Timeout quá cứng nhắc:**
+   - *Vấn đề:* Có nhiều đoạn `waitForTimeout(500)` hoặc chờ mạng tĩnh lặng `networkidle` đang tốn thời gian cứng.
+   - *Giải pháp (Đề xuất):* Sử dụng các assertion linh hoạt hơn của Playwright hoặc dựa vào API interception thay vì đợi DOM idle.
 
 #### 4.2. Kiến trúc Dữ liệu & So khớp bằng AI (Catalog Product)
 - **[x] Đổi tên/Chuẩn hóa Database (MasterProduct -> CatalogProduct):** Thay đổi tư duy từ "AP24h vs Đối thủ" sang "So sánh Web-vs-Web ngang hàng". Thiết kế bảng trung tâm `catalog_products` độc lập làm "Cái trục".
@@ -617,15 +629,17 @@ flowchart TD
      - **Bước 2.3:** Sort theo điểm `textScore` giảm dần và chỉ lấy `limit(20)` sản phẩm. (Nếu MongoDB trả về rỗng, coi như chắc chắn là SP mới).
   3. Gửi danh sách 20 ứng viên này + Tên sản phẩm mới cho **Gemini AI**.
   4. Nếu AI chọn 1 -> Link URL vào `CatalogProductId`. Nếu AI trả về 'NEW' -> Tạo `CatalogProduct` mới.
-- **[ ] Viết API thống kê giá của tất cả các Site dựa trên Catalog Product ID.**
+
 
 #### 4.3. Giao diện Ma trận Đối chiếu giá N-Web (N-way Comparison Dashboard)
+- **[ ] Viết API thống kê giá của tất cả các Site dựa trên Catalog Product ID.**
 - **[ ] Xây dựng Bảng đối chiếu giá dạng Ma trận (Matrix Table) tại `/price-comparison`.**
 - **Trục dọc (Rows):** Danh sách `CatalogProducts` (VD: iPhone 16 Pro Max 256GB).
 - **Trục ngang (Columns):** Chọn Web Gốc (Base Site) và N đối thủ muốn so sánh. Các đối thủ không kinh doanh sẽ báo trống.
-- **Thao tác:** Bấm Duyệt (Approve) giá của đối thủ nào thì Auto-Action sẽ chạy theo giá đối thủ đó.
+
 
 #### 4.4. Bot Playwright Tự động Sửa giá (Auto-Action)
+- **Thao tác:** Bấm Duyệt (Approve) giá của đối thủ nào thì Auto-Action sẽ chạy theo giá đối thủ đó.
 - **[ ]** Viết Bot Playwright. Khi Admin bấm nút cập nhật giá tự động, Bot đăng nhập vào Admin AP24h, tìm sản phẩm gốc tương ứng và cập nhật giá mới theo đối thủ vừa duyệt.
   - [ ] Nút "Bot Playwright Update Giá": Giữ nguyên tính năng cho phép 1 con bot tự đăng nhập Admin AP24h để sửa giá dựa trên giá thấp nhất của thị trường.
 

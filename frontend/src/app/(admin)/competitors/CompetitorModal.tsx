@@ -222,7 +222,7 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
 
   return (
     <Modal
-      title={editData ? 'Sửa Đối thủ' : 'Thêm Đối thủ mới'}
+      title={editData ? 'Sửa Domain' : 'Thêm Domain mới'}
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -244,7 +244,7 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
       <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
         <Form form={form} layout="vertical">
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="name" label="Tên đối thủ" rules={[{ required: true }]}>
+            <Form.Item name="name" label="Tên Domain" rules={[{ required: true }]}>
               <Input placeholder="Ví dụ: CellphoneS" />
             </Form.Item>
             <Form.Item name="domain" label="Tên miền (Domain)" rules={[{ required: true }]}>
@@ -420,7 +420,7 @@ export default function CompetitorModal({ open, onCancel, onSuccess, editData }:
           <div className="flex gap-2">
             <Button onClick={onCancel} disabled={loading}>Hủy bỏ</Button>
             <Button type="primary" onClick={handleSaveAll} loading={loading}>
-              Lưu Đối thủ
+              Lưu Domain
             </Button>
           </div>
         </div>

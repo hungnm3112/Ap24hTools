@@ -49,7 +49,7 @@ export default function CompetitorsPage() {
 
   const columns = [
     {
-      title: 'Tên đối thủ',
+      title: 'Tên Domain',
       dataIndex: 'name',
       key: 'name',
       render: (text: string, record: ICompetitor) => (
@@ -135,8 +135,8 @@ export default function CompetitorsPage() {
             Sửa & Cấu hình
           </Button>
           <Popconfirm
-            title="Xóa đối thủ?"
-            description="Bạn có chắc chắn muốn xóa đối thủ này và toàn bộ dữ liệu cào liên quan không?"
+            title="Xóa Domain?"
+            description="Bạn có chắc chắn muốn xóa Domain này và toàn bộ dữ liệu cào liên quan không?"
             onConfirm={() => handleDelete(record._id)}
             okText="Đồng ý xóa"
             cancelText="Hủy"
@@ -153,7 +153,7 @@ export default function CompetitorsPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Quản lý Đối thủ</h1>
+          <h1 className="text-2xl font-bold">Quản lý Domain</h1>
           <p className="text-gray-500 text-sm mt-1">Cấu hình các website cần theo dõi giá</p>
         </div>
         <Button
@@ -165,7 +165,7 @@ export default function CompetitorsPage() {
           }}
           size="large"
         >
-          Thêm đối thủ mới
+          Thêm Domain mới
         </Button>
       </div>
 

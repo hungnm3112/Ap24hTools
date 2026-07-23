@@ -58,7 +58,7 @@ export class CompetitorsService {
       const updatedCompetitor = await this.competitorModel.findByIdAndUpdate(
         id,
         updateCompetitorDto,
-        { new: true }
+        { returnDocument: 'after' }
       ).exec();
 
       if (!updatedCompetitor) {

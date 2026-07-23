@@ -6,6 +6,7 @@ import { ScrapedProduct, ScrapedProductSchema } from './schemas/scraped-product.
 import { IgnoredKeywordsModule } from '../ignored-keywords/ignored-keywords.module';
 import { CatalogProductsModule } from '../catalog-products/catalog-products.module';
 import { ConfigModule } from '@nestjs/config';
+import { AiMatcherService } from './ai-matcher.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule
   ],
   controllers: [ScrapedProductsController],
-  providers: [ScrapedProductsService],
+  providers: [ScrapedProductsService, AiMatcherService],
   exports: [ScrapedProductsService]
 })
 export class ScrapedProductsModule {}
