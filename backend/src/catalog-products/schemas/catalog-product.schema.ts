@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type MasterProductDocument = MasterProduct & Document;
+export type CatalogProductDocument = CatalogProduct & Document;
 
 @Schema({ timestamps: true })
-export class MasterProduct {
-  // Logic: Tạo document schema cho MasterProduct (Sản phẩm chuẩn/Sản phẩm gốc)
+export class CatalogProduct {
+  // Logic: Tạo document schema cho CatalogProduct (Sản phẩm chuẩn/Sản phẩm gốc)
   // Đây là trục chính để các sản phẩm cào được từ các trang web liên kết vào.
   
   @Prop({ required: true, unique: true })
@@ -15,6 +15,6 @@ export class MasterProduct {
   normalizedName: string; // Tên chuẩn hóa chữ thường, bỏ dấu để phục vụ lọc thô nhanh
 }
 
-export const MasterProductSchema = SchemaFactory.createForClass(MasterProduct);
+export const CatalogProductSchema = SchemaFactory.createForClass(CatalogProduct);
 // Index text search để tìm kiếm siêu nhanh ứng viên
-MasterProductSchema.index({ normalizedName: 'text' });
+CatalogProductSchema.index({ normalizedName: 'text' });

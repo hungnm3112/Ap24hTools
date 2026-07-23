@@ -588,17 +588,46 @@ flowchart TD
   - [x] Test thử selector ngay trên Iframe (Highlight các phần tử match).
   - [x] Gắn Action lưu hoàn chỉnh toàn bộ Cấu hình (Thông tin + URLs + Selectors) vào Database.
 
-### Phase 4: Thuật toán So khớp & Cập nhật Giá (Matching & Auto-Update)
-- **Backend:**
-  - [ ] Viết thuật toán chuẩn hóa tên SP (loại bỏ từ khóa rác) và Token Matching (so khớp tỷ lệ >= 60%).
-  - [ ] Cấu hình Cronjob (`@nestjs/schedule`) chạy tự động cào giá định kỳ theo ngày.
-  - [ ] Lưu kết quả so khớp vào bảng `product_matches`.
-  - [ ] Viết API lấy kết quả so khớp, Approve/Reject giá.
-  - [ ] Dùng Playwright giả lập Admin (lưu session) thao tác cập nhật giá tự động lên website AP24h khi có lệnh Approve.
-- **Frontend:**
-  - [ ] Xây dựng Bảng đối chiếu giá (`/price-comparison`).
-  - [ ] Hiển thị thông tin So sánh (Giá AP24h vs Giá Đối thủ, % Chênh lệch, Trạng thái).
-  - [ ] Gắn API cho phép Admin click nút Duyệt/Từ chối (Approve/Reject).
+### Phase 4: Luồng Cào Dữ Liệu & So khớp bằng AI (AI Matching & Caching)
+
+#### 4.1. Luồng Logic Cào Dữ Liệu (Scraping Logic)
+**Kiến trúc Tổng quan:**
+- **Frontend (Next.js):** Giao diện cấu hình Đối thủ (Competitor), nhập URL và kiểm thử CSS Selector.
+- **Backend (NestJS):** Điều khiển Playwright.
+- **AI (Google Gemini):** Hỗ trợ tự động phân tích mã HTML để sinh CSS Selector.
+- **Cơ sở dữ liệu (MongoDB):** Lưu cấu hình Đối thủ và Dữ liệu Sản phẩm (Scraped Products).
+
+**Bộ Chọn CSS & Cơ chế 2 Cấp:**
+- **Cấp 1:** `productListContainer` (Khoanh vùng khu vực danh sách) + `productItem` (Chiếc hộp bọc sản phẩm).
+- **Cấp 2:** Bên trong `productItem`, bóc tách `productName`, `productPrice`, `productImage`.
+- **Phân trang Hybrid:** Tự động nhận diện (A) Phân trang thuần túy (URL thay đổi) và (B) Tải thêm AJAX (URL giữ nguyên, đếm số lượng tăng lên, lọc trùng lặp qua `seenUrls`).
+
+**Luồng chạy Cào Dữ Liệu:**
+- **[x] Cào Tự động (Cronjob):** Chạy lặp qua mọi đối thủ mỗi ngày.
+- **[x] Cào Thủ công 1 URL:** Sử dụng Form `test-scraping`, query params được mã hóa `encodeURIComponent`.
+- **[x] Tối ưu Performance:** `route.abort()` để chặn `image`, `media`, `font`. Regex tự động parse giá sang dạng Số.
+
+#### 4.2. Kiến trúc Dữ liệu & So khớp bằng AI (Catalog Product)
+- **[x] Đổi tên/Chuẩn hóa Database (MasterProduct -> CatalogProduct):** Thay đổi tư duy từ "AP24h vs Đối thủ" sang "So sánh Web-vs-Web ngang hàng". Thiết kế bảng trung tâm `catalog_products` độc lập làm "Cái trục".
+- **[x] Thuật toán So khớp (AI + Pre-filter):**
+  1. Khi có 1 Scraped Product mới, kiểm tra Caching (lưu trong DB) chưa. Nếu có, dùng ID cũ.
+  2. Nếu chưa có mapping, tiến hành **Pre-filter (Lọc thô)** để tìm 20 ứng viên gần giống nhất:
+     - **Bước 2.1 (Tiền xử lý):** Chuyển tên SP cào được sang chữ thường, xóa ký tự đặc biệt, và lọc bỏ các từ khóa rác (dựa vào bảng `ignored_keywords` như "chính hãng", "vn/a", "giá sốc"). VD: "Điện thoại iPhone 16 Pro Max 256GB Chính hãng VN/A" -> "iphone 16 pro max 256gb".
+     - **Bước 2.2 (MongoDB Text Search):** Bảng `CatalogProducts` sẽ được đánh index `$text` ở trường `normalizedName`. Hệ thống dùng lệnh `$text: { $search: "iphone 16 pro max 256gb" }` để MongoDB tự động tìm và chấm điểm (Score).
+     - **Bước 2.3:** Sort theo điểm `textScore` giảm dần và chỉ lấy `limit(20)` sản phẩm. (Nếu MongoDB trả về rỗng, coi như chắc chắn là SP mới).
+  3. Gửi danh sách 20 ứng viên này + Tên sản phẩm mới cho **Gemini AI**.
+  4. Nếu AI chọn 1 -> Link URL vào `CatalogProductId`. Nếu AI trả về 'NEW' -> Tạo `CatalogProduct` mới.
+- **[ ] Viết API thống kê giá của tất cả các Site dựa trên Catalog Product ID.**
+
+#### 4.3. Giao diện Ma trận Đối chiếu giá N-Web (N-way Comparison Dashboard)
+- **[ ] Xây dựng Bảng đối chiếu giá dạng Ma trận (Matrix Table) tại `/price-comparison`.**
+- **Trục dọc (Rows):** Danh sách `CatalogProducts` (VD: iPhone 16 Pro Max 256GB).
+- **Trục ngang (Columns):** Chọn Web Gốc (Base Site) và N đối thủ muốn so sánh. Các đối thủ không kinh doanh sẽ báo trống.
+- **Thao tác:** Bấm Duyệt (Approve) giá của đối thủ nào thì Auto-Action sẽ chạy theo giá đối thủ đó.
+
+#### 4.4. Bot Playwright Tự động Sửa giá (Auto-Action)
+- **[ ]** Viết Bot Playwright. Khi Admin bấm nút cập nhật giá tự động, Bot đăng nhập vào Admin AP24h, tìm sản phẩm gốc tương ứng và cập nhật giá mới theo đối thủ vừa duyệt.
+  - [ ] Nút "Bot Playwright Update Giá": Giữ nguyên tính năng cho phép 1 con bot tự đăng nhập Admin AP24h để sửa giá dựa trên giá thấp nhất của thị trường.
 
 ### Phase 5: Thống kê & Polish (Dashboard & Price History)
 - **Backend:**

@@ -1,12 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { getCompetitorsAction, getScrapedProductsAction, runManualScrapingAction } from '@/actions/scraping.action';
+import { useSearchParams } from 'next/navigation';
 
-export default function TestScrapingPage() {
+function TestScrapingContent() {
+  const searchParams = useSearchParams();
+  const initCompetitorId = searchParams?.get('competitorId') || '';
+  const initTargetUrl = searchParams?.get('targetUrl') || '';
+
   const [loading, setLoading] = useState(false);
   const [competitors, setCompetitors] = useState<any[]>([]);
-  const [selectedCompetitorId, setSelectedCompetitorId] = useState('');
+  const [selectedCompetitorId, setSelectedCompetitorId] = useState(initCompetitorId);
+  const [targetUrl, setTargetUrl] = useState(initTargetUrl);
   const [scrapedProducts, setScrapedProducts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -28,7 +34,7 @@ export default function TestScrapingPage() {
   const runScraping = async () => {
     setLoading(true);
     try {
-      await runManualScrapingAction(selectedCompetitorId || undefined);
+      await runManualScrapingAction(selectedCompetitorId || undefined, targetUrl || undefined);
       alert('Cào dữ liệu thành công!');
       loadProducts();
     } catch (err: any) {
@@ -42,22 +48,36 @@ export default function TestScrapingPage() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">UI Test - Cơ chế Cào dữ liệu</h1>
       
-      <div className="flex gap-4 mb-6">
-        <select 
-          className="border p-2 rounded" 
-          value={selectedCompetitorId} 
-          onChange={(e) => setSelectedCompetitorId(e.target.value)}
-        >
-          <option value="">-- Cào Tất Cả Đối Thủ --</option>
-          {competitors.map(c => (
-            <option key={c._id} value={c._id}>{c.name}</option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-end">
+        <div className="flex-1">
+          <label className="block text-sm font-semibold mb-1">Chọn đối thủ</label>
+          <select 
+            className="border p-2 rounded w-full" 
+            value={selectedCompetitorId} 
+            onChange={(e) => setSelectedCompetitorId(e.target.value)}
+          >
+            <option value="">-- Cào Tất Cả Đối Thủ --</option>
+            {competitors.map(c => (
+              <option key={c._id} value={c._id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
         
+        <div className="flex-2 min-w-[300px]">
+          <label className="block text-sm font-semibold mb-1">Cào cụ thể 1 URL (Tùy chọn)</label>
+          <input 
+            type="text"
+            className="border p-2 rounded w-full" 
+            placeholder="Để trống để cào tất cả URL của đối thủ..."
+            value={targetUrl}
+            onChange={(e) => setTargetUrl(e.target.value)}
+          />
+        </div>
+
         <button 
           onClick={runScraping}
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-600 text-white px-6 py-2 h-[42px] rounded hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? 'Đang chạy (Vui lòng chờ...)' : 'Cào Dữ Liệu Ngay'}
         </button>
@@ -78,7 +98,15 @@ export default function TestScrapingPage() {
             {scrapedProducts.map(p => (
               <tr key={p._id} className="hover:bg-gray-50 border-b">
                 <td className="p-3">
-                  {p.productImage && <img src={p.productImage} alt={p.productName} className="w-16 h-16 object-contain" />}
+                  {p.productImage && (
+                    <img 
+                      src={p.productImage.startsWith('/') 
+                        ? (p.siteId?.domain?.startsWith('http') ? p.siteId.domain : `https://${p.siteId?.domain || ''}`) + p.productImage 
+                        : p.productImage} 
+                      alt={p.productName} 
+                      className="w-16 h-16 object-contain" 
+                    />
+                  )}
                 </td>
                 <td className="p-3 font-medium text-blue-600">
                   <a href={p.productUrl} target="_blank" rel="noreferrer">{p.productName}</a>
@@ -100,5 +128,13 @@ export default function TestScrapingPage() {
         </table>
       </div>
     </div>
+  );
+}
+
+export default function TestScrapingPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Đang tải...</div>}>
+      <TestScrapingContent />
+    </Suspense>
   );
 }

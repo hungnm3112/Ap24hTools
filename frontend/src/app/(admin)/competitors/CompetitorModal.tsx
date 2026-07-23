@@ -16,7 +16,8 @@ interface CompetitorModalProps {
 }
 
 const SELECTOR_FIELDS = [
-  { key: 'productItem', label: 'Khung sản phẩm (Chứa toàn bộ SP)' },
+  { key: 'productListContainer', label: 'Khung chứa toàn bộ sản phẩm' },
+  { key: 'productItem', label: 'Khung chứa 1 sản phẩm' },
   { key: 'productName', label: 'Tên sản phẩm' },
   { key: 'productPrice', label: 'Giá sản phẩm' },
   { key: 'productImage', label: 'Ảnh sản phẩm' },

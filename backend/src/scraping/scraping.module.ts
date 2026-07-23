@@ -3,10 +3,10 @@ import { ScrapingController } from './scraping.controller';
 import { ScrapingService } from './scraping.service';
 import { CompetitorsModule } from '../competitors/competitors.module';
 import { ScrapedProductsModule } from '../scraped-products/scraped-products.module';
-import { MasterProductsModule } from '../master-products/master-products.module';
+import { CatalogProductsModule } from '../catalog-products/catalog-products.module';
 
 @Module({
-  imports: [CompetitorsModule, ScrapedProductsModule, MasterProductsModule],
+  imports: [CompetitorsModule, ScrapedProductsModule, CatalogProductsModule],
   controllers: [ScrapingController],
   providers: [ScrapingService]
 })

@@ -28,11 +28,9 @@ export class ScrapingController {
   }
 
   @Post('run-manual')
-  async runManualScraping(@Body() body: { competitorId?: string }) {
+  async runManualScraping(@Body() body: { competitorId?: string, targetUrl?: string }) {
     try {
-      // Để nó chạy ngầm không block request lâu, hoặc có thể await
-      // Ở đây ta cứ await luôn để frontend chờ lấy kết quả, nhưng thực tế nên ném qua queue
-      const result = await this.scrapingService.runAutoScraping(body.competitorId);
+      const result = await this.scrapingService.runAutoScraping(body.competitorId, body.targetUrl);
       return { success: true, ...result };
     } catch (error) {
       throw new BadRequestException('Lỗi khi chạy cào thủ công: ' + error.message);

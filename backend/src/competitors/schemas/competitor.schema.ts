@@ -28,6 +28,9 @@ export const ScrapingUrlSchema = SchemaFactory.createForClass(ScrapingUrl);
 @Schema({ _id: false })
 export class Selectors {
   @Prop()
+  productListContainer?: string; // Khung chứa toàn bộ danh sách sản phẩm (để loại bỏ rác bên ngoài)
+
+  @Prop()
   productItem?: string; // Ví dụ: '.product-item'
 
   @Prop()

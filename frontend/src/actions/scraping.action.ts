@@ -41,12 +41,12 @@ export async function getScrapedProductsAction() {
   }
 }
 
-export async function runManualScrapingAction(competitorId?: string) {
+export async function runManualScrapingAction(competitorId?: string, targetUrl?: string) {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scraping/run-manual`, {
       method: 'POST',
       headers: await getAuthHeaders(),
-      body: JSON.stringify({ competitorId }),
+      body: JSON.stringify({ competitorId, targetUrl }),
     });
     if (!res.ok) throw new Error('Failed to run manual scraping');
     return await res.json();

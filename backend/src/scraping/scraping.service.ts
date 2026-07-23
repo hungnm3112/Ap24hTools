@@ -212,7 +212,7 @@ export class ScrapingService {
     await this.runAutoScraping();
   }
 
-  async runAutoScraping(targetCompetitorId?: string) {
+  async runAutoScraping(targetCompetitorId?: string, targetUrl?: string) {
     let competitors: any[] = [];
     if (targetCompetitorId) {
       const comp = await this.competitorsService.findOne(targetCompetitorId);
@@ -241,6 +241,9 @@ export class ScrapingService {
 
       for (const urlObj of competitor.scrapingUrls) {
         const url = urlObj.url;
+        // Bỏ qua nếu có yêu cầu cào đúng 1 URL cụ thể
+        if (targetUrl && url !== targetUrl) continue;
+
         this.logger.log(`- Đang xử lý URL: ${url}`);
         
         try {
@@ -265,7 +268,10 @@ export class ScrapingService {
             const plainSelectors = JSON.parse(JSON.stringify(selectors));
             // Lấy danh sách sản phẩm hiện tại trên trang
             const products = await page.evaluate((sel) => {
-              const items = document.querySelectorAll(sel.productItem);
+              const combinedSelector = sel.productListContainer 
+                ? `${sel.productListContainer} ${sel.productItem}` 
+                : sel.productItem;
+              const items = document.querySelectorAll(combinedSelector);
               const result: { name: string; price: number; image: string; productUrl: string; }[] = [];
               items.forEach(item => {
                 let name = '', price = 0, image = '', productUrl = '';
@@ -292,10 +298,11 @@ export class ScrapingService {
                 // Cố gắng tìm thẻ a để lấy URL sản phẩm (nếu user cấu hình thẻ a thì lấy href)
                 const aEl = item.tagName === 'A' ? item : item.querySelector('a');
                 if (aEl) productUrl = aEl.getAttribute('href') || '';
-                // Chuẩn hóa URL nếu bị thiếu gốc
+                
+                // Chuẩn hóa URL nếu bị thiếu gốc (Relative Path) đối với productUrl
+                const origin = new URL(location.href).origin;
                 if (productUrl && productUrl.startsWith('/')) {
-                  const urlObj = new URL(location.href);
-                  productUrl = urlObj.origin + productUrl;
+                  productUrl = origin + productUrl;
                 }
 
                 if (name && productUrl) {

@@ -10,9 +10,10 @@ import { MailModule } from './mail/mail.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompetitorsModule } from './competitors/competitors.module';
 import { ScrapingModule } from './scraping/scraping.module';
-import { MasterProductsModule } from './master-products/master-products.module';
+import { CatalogProductsModule } from './catalog-products/catalog-products.module';
 import { ScrapedProductsModule } from './scraped-products/scraped-products.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { IgnoredKeywordsModule } from './ignored-keywords/ignored-keywords.module';
 
 @Module({
   imports: [
@@ -58,8 +59,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     CompetitorsModule,
 
     ScrapingModule,
-    MasterProductsModule,
+    CatalogProductsModule,
     ScrapedProductsModule,
+    IgnoredKeywordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

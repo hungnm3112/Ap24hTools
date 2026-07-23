@@ -21,6 +21,10 @@ export class ScrapingUrlDto {
 export class SelectorsDto {
   @IsOptional()
   @IsString()
+  productListContainer?: string;
+
+  @IsOptional()
+  @IsString()
   productItem?: string;
 
   @IsOptional()
